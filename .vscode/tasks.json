@@ -1,0 +1,36 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "1. Preparar projeto (Windows)",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File setup.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "1. Preparar projeto (macOS/Linux)",
+      "type": "shell",
+      "command": "bash setup.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "Testes (flutter test)",
+      "type": "shell",
+      "command": "flutter test",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Analise (flutter analyze)",
+      "type": "shell",
+      "command": "flutter analyze",
+      "problemMatcher": []
+    },
+    {
+      "label": "Executar o app (flutter run)",
+      "type": "shell",
+      "command": "flutter run",
+      "problemMatcher": []
+    }
+  ]
+}
