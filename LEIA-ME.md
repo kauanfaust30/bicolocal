@@ -96,7 +96,7 @@ Durante a execução: os testes aparecem vermelhos antes de ficarem verdes? Leia
 
 ### 4.7 Revisão do que a IA entregou
 
-- [ ] Rodei `flutter test` e `flutter analyze` eu mesmo (Tasks: Run Task no VS Code)
+- [ opcao A] Rodei `flutter test` e `flutter analyze` eu mesmo (Tasks: Run Task no VS Code)
 - [ ] Cada cenário da spec tem um teste
 - [ ] Li o diff por tarefa; não há arquivos fora do plano
 - [ ] Não há código que ninguém pediu

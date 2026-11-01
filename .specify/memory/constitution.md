@@ -1,50 +1,69 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+Version change: unratified scaffold -> 1.0.0
+Modified principles: none (initial ratification)
+Added sections: BicoLocal core principles, project constraints, development workflow
+Removed sections: none
+Follow-up TODOs: confirm the original ratification date.
+-->
+
+# BicoLocal Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Simplicidade e legibilidade
+O código Dart MUST ser simples e legível. Widgets e funções MUST ter escopo pequeno e uma
+responsabilidade clara. A organização por funcionalidade MUST seguir `lib/features/<nome>/`, com
+`data`, `domain` e `presentation` quando essas camadas forem necessárias. Nomes do domínio MUST
+estar em português; identificadores técnicos exigidos pelo Flutter MUST estar em inglês. Isso
+reduz complexidade e mantém as regras do produto fáceis de localizar.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Teste primeiro (INEGOCIÁVEL)
+Para cada mudança de comportamento, o teste correspondente MUST ser escrito primeiro. A
+implementação MUST começar somente depois de executar `flutter test` e observar a falha esperada;
+depois da implementação, `flutter test` MUST passar. Testes MUST usar repositórios falsos e MUST
+NOT acessar o Firebase real. Nenhuma entrega de código está concluída sem executar `flutter test`.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Dependências justificadas
+O projeto MUST preferir recursos já disponíveis no Flutter e Dart. Cada dependência nova MUST ser
+justificada no plano com sua finalidade e motivo para não usar uma alternativa já disponível. O
+plano MUST identificar as dependências antes de sua inclusão no `pubspec.yaml`.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Comunicação clara em português
+Todo texto apresentado ao usuário MUST estar em português, com linguagem clara e uma ação ou
+resultado compreensível. Mensagens de erro MUST explicar o problema e indicar como continuar,
+quando houver uma ação possível. Datas MUST ser salvas em ISO 8601 e exibidas no formato
+brasileiro `dd/MM/aaaa`.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Privacidade e contato protegido
+Dados pessoais MUST ser acessíveis somente para as finalidades necessárias ao serviço. O contato
+de contratante e prestador MUST permanecer oculto entre as partes até o aceite de uma candidatura
+pelo contratante; após o aceite, o contato MUST ficar visível apenas às partes daquele pedido.
+Listas, telas e respostas de dados MUST respeitar essa regra de acesso.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Restrições do projeto
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+O BicoLocal MUST ser desenvolvido como aplicativo móvel em Flutter estável com Dart e null
+safety. A interface MUST priorizar uso em celular e apresentar estados de carregamento, vazio e
+erro nas listas. Chamadas ao banco MUST passar por repositórios e MUST NOT ser feitas dentro de
+widgets. Segredos, chaves e arquivos de configuração secretos MUST NOT ser adicionados ao Git.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Fluxo de desenvolvimento e qualidade
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+As funcionalidades MUST seguir `specs/<feature>/spec.md`; trabalho fora da especificação MUST
+ser excluído. As tarefas MUST ordenar os testes antes da implementação. Antes de declarar uma
+entrega concluída, o agente MUST executar `flutter test` e `flutter analyze` e informar os
+resultados. A inclusão de pacotes novos exige confirmação do usuário. `git push` exige confirmação
+do usuário.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Esta constituição rege decisões de produto e desenvolvimento do BicoLocal. Em caso de conflito,
+seus princípios e a especificação da funcionalidade prevalecem sobre convenções locais menos
+específicas. Alterações nesta constituição MUST atualizar sua versão, a data de alteração e o
+relatório de impacto; alterações que removam ou redefinam princípios exigem versão MAJOR, novos
+princípios ou expansão material exigem MINOR, e correções de redação ou esclarecimentos exigem
+PATCH. Revisões de especificações, planos, tarefas e código MUST verificar conformidade com estes
+princípios; divergências MUST ser corrigidas ou registradas como bloqueio antes da conclusão.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): confirmar data original de adoção | **Last Amended**: 2026-10-19

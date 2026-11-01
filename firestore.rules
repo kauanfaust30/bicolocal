@@ -1,0 +1,252 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isProfile(profile) {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.perfil == profile;
+    }
+
+    function localNow() {
+      return request.time + duration.value(-3, 'h');
+    }
+
+    function validForToday(data) {
+      return data.validadeAteDia is timestamp
+        && data.validadeAteDia >= localNow().date();
+    }
+
+    function dateRangeValid(data) {
+      return data.dataDesejadaDia is timestamp
+        && data.validadeAteDia is timestamp
+        && data.validadeAteDia.date() >= localNow().date()
+        && data.validadeAteDia.date() <= data.dataDesejadaDia.date();
+    }
+
+    function dateOrderValid(data) {
+      return data.dataDesejadaDia is timestamp
+        && data.validadeAteDia is timestamp
+        && data.validadeAteDia.date() <= data.dataDesejadaDia.date();
+    }
+
+    function isContractor(uid) {
+      return signedIn()
+        && request.auth.uid == uid
+        && isProfile('contratante');
+    }
+
+    function isRequestParty(data) {
+      return signedIn()
+        && (data.contratanteUid == request.auth.uid
+          || data.prestadorEscolhidoUid == request.auth.uid);
+    }
+
+    function mayManage(data) {
+      return signedIn()
+        && data.estado != 'cancelado'
+        && ((data.estado == 'aberto'
+              && validForToday(data)
+              && data.contratanteUid == request.auth.uid)
+          || (data.estado == 'em_andamento'
+              && (data.contratanteUid == request.auth.uid
+                || data.prestadorEscolhidoUid == request.auth.uid)));
+    }
+
+    function isOpenAndValid(data) {
+      return data.estado == 'aberto' && validForToday(data);
+    }
+
+    function requestPath(requestId) {
+      return /databases/$(database)/documents/requests/$(requestId);
+    }
+
+    match /users/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list: if false;
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly([
+          'nome', 'cidade', 'cidadeChave', 'bairro', 'perfil', 'criadoEm'
+        ])
+        && request.resource.data.keys().hasAll([
+          'nome', 'cidade', 'cidadeChave', 'bairro', 'perfil', 'criadoEm'
+        ])
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() > 0
+        && request.resource.data.cidade is string
+        && request.resource.data.cidade.size() > 0
+        && request.resource.data.cidadeChave is string
+        && request.resource.data.bairro is string
+        && request.resource.data.bairro.size() > 0
+        && request.resource.data.perfil in ['contratante', 'prestador']
+        && request.resource.data.criadoEm == request.time;
+      allow update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'nome', 'cidade', 'cidadeChave', 'bairro', 'perfil'
+        ])
+        && request.resource.data.perfil in ['contratante', 'prestador']
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() > 0
+        && request.resource.data.cidade is string
+        && request.resource.data.cidade.size() > 0
+        && request.resource.data.bairro is string
+        && request.resource.data.bairro.size() > 0;
+      allow delete: if false;
+
+      match /private/contact {
+        allow get: if signedIn() && request.auth.uid == uid;
+        allow list: if false;
+        allow create, update: if signedIn()
+          && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['email'])
+          && request.resource.data.email == request.auth.token.email;
+        allow delete: if false;
+      }
+    }
+
+    match /categories/{categoryId} {
+      allow get, list: if signedIn();
+      allow write: if false;
+    }
+
+    match /requests/{requestId} {
+      allow get, list: if signedIn()
+        && ((resource.data.estado == 'aberto'
+              && isProfile('prestador')
+              && validForToday(resource.data))
+          || resource.data.contratanteUid == request.auth.uid
+          || (resource.data.estado == 'em_andamento'
+              && resource.data.prestadorEscolhidoUid == request.auth.uid));
+
+      allow create: if isContractor(request.resource.data.contratanteUid)
+        && request.resource.data.keys().hasOnly([
+          'contratanteUid', 'titulo', 'categoriaId', 'categoriaNome', 'descricao',
+          'cidade', 'cidadeChave', 'local', 'dataDesejada', 'dataDesejadaDia',
+          'validadeAte', 'validadeAteDia', 'valorCentavos', 'estado',
+          'prestadorEscolhidoUid', 'criadoEm', 'atualizadoEm'
+        ])
+        && request.resource.data.estado == 'aberto'
+        && request.resource.data.prestadorEscolhidoUid == null
+        && request.resource.data.titulo is string
+        && request.resource.data.titulo.size() > 0
+        && request.resource.data.categoriaId is string
+        && request.resource.data.categoriaId.size() > 0
+        && request.resource.data.descricao is string
+        && request.resource.data.descricao.size() > 0
+        && request.resource.data.cidade is string
+        && request.resource.data.cidade.size() > 0
+        && request.resource.data.local is string
+        && request.resource.data.local.size() > 0
+        && request.resource.data.valorCentavos is int
+        && request.resource.data.valorCentavos > 0
+        && request.resource.data.criadoEm == request.time
+        && request.resource.data.atualizadoEm == request.time
+        && dateRangeValid(request.resource.data);
+
+      allow update: if signedIn()
+        && request.resource.data.contratanteUid == resource.data.contratanteUid
+        && (
+          (mayManage(resource.data)
+            && request.resource.data.estado == resource.data.estado
+            && request.resource.data.prestadorEscolhidoUid == resource.data.prestadorEscolhidoUid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'titulo', 'categoriaId', 'categoriaNome', 'descricao', 'cidade',
+              'cidadeChave', 'local', 'dataDesejada', 'dataDesejadaDia',
+              'validadeAte', 'validadeAteDia', 'valorCentavos', 'atualizadoEm'
+            ])
+            && request.resource.data.atualizadoEm == request.time
+            && request.resource.data.titulo is string
+            && request.resource.data.titulo.size() > 0
+            && request.resource.data.descricao is string
+            && request.resource.data.descricao.size() > 0
+            && request.resource.data.valorCentavos is int
+            && request.resource.data.valorCentavos > 0
+            && ((resource.data.estado == 'aberto'
+                  && dateRangeValid(request.resource.data))
+              || (resource.data.estado == 'em_andamento'
+                  && dateOrderValid(request.resource.data))))
+          || (mayManage(resource.data)
+            && request.resource.data.estado == 'cancelado'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'atualizadoEm'])
+            && request.resource.data.atualizadoEm == request.time)
+          || (isContractor(resource.data.contratanteUid)
+            && isOpenAndValid(resource.data)
+            && request.resource.data.estado == 'em_andamento'
+            && resource.data.prestadorEscolhidoUid == null
+            && request.resource.data.prestadorEscolhidoUid is string
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'estado', 'prestadorEscolhidoUid', 'atualizadoEm'
+            ])
+            && request.resource.data.atualizadoEm == request.time
+            && getAfter(/databases/$(database)/documents/requests/$(requestId)/applications/$(request.resource.data.prestadorEscolhidoUid)).data.estado == 'aceita')
+        );
+      allow delete: if false;
+
+      match /applications/{providerUid} {
+        allow get, list: if signedIn()
+          && (request.auth.uid == providerUid
+            || get(requestPath(requestId)).data.contratanteUid == request.auth.uid);
+        allow create: if signedIn()
+          && request.auth.uid == providerUid
+          && isProfile('prestador')
+          && isOpenAndValid(get(requestPath(requestId)).data)
+          && request.resource.data.keys().hasOnly([
+            'prestadorUid', 'estado', 'criadaEm', 'atualizadaEm'
+          ])
+          && request.resource.data.prestadorUid == providerUid
+          && request.resource.data.estado == 'pendente'
+          && request.resource.data.criadaEm == request.time
+          && request.resource.data.atualizadaEm == request.time;
+        allow update: if signedIn()
+          && get(requestPath(requestId)).data.contratanteUid == request.auth.uid
+          && resource.data.estado == 'pendente'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'atualizadaEm'])
+          && request.resource.data.atualizadaEm == request.time
+          && ((request.resource.data.estado == 'aceita'
+                && getAfter(requestPath(requestId)).data.estado == 'em_andamento'
+                && getAfter(requestPath(requestId)).data.prestadorEscolhidoUid == providerUid)
+            || (request.resource.data.estado == 'recusada'
+                && getAfter(requestPath(requestId)).data.estado == 'em_andamento'
+                && getAfter(requestPath(requestId)).data.prestadorEscolhidoUid != providerUid));
+        allow delete: if false;
+
+        match /private/contact {
+          allow get: if signedIn()
+            && (request.auth.uid == providerUid
+              || (get(requestPath(requestId)).data.estado == 'em_andamento'
+                && get(requestPath(requestId)).data.prestadorEscolhidoUid == providerUid
+                && get(requestPath(requestId)).data.contratanteUid == request.auth.uid));
+          allow list: if false;
+          allow create: if signedIn()
+            && request.auth.uid == providerUid
+            && request.resource.data.keys().hasOnly(['email'])
+            && request.resource.data.email == request.auth.token.email
+            && getAfter(/databases/$(database)/documents/requests/$(requestId)/applications/$(providerUid)).data.estado == 'pendente';
+          allow update, delete: if false;
+        }
+      }
+
+      match /privateContacts/{contractorUid} {
+        allow get: if signedIn()
+          && get(requestPath(requestId)).data.estado == 'em_andamento'
+          && (get(requestPath(requestId)).data.contratanteUid == request.auth.uid
+            || get(requestPath(requestId)).data.prestadorEscolhidoUid == request.auth.uid);
+        allow list: if false;
+        allow create: if isContractor(contractorUid)
+          && request.resource.data.keys().hasOnly(['email', 'contratanteUid'])
+          && request.resource.data.contratanteUid == contractorUid
+          && request.resource.data.email == request.auth.token.email
+          && getAfter(requestPath(requestId)).data.estado == 'em_andamento';
+        allow update, delete: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

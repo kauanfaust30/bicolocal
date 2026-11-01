@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "916584761965",
+    "project_id": "bicolocal-35534",
+    "storage_bucket": "bicolocal-35534.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916584761965:android:894550ea1b958e05c20d64",
+        "android_client_info": {
+          "package_name": "com.example.bicolocal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7fj8ZKTtU8LfXrxE0U3CaT9h4lBZgzWo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
