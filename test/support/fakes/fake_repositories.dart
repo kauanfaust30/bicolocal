@@ -90,6 +90,7 @@ class FakePedidoRepository implements PedidoRepository {
     List<Pedido> pedidos = const [],
     this.falhasRestantes = 0,
     this.falhaListarAbertos,
+    this.falhasCategoriasRestantes = 0,
   }) : categorias = categorias.toList(),
        pedidos = pedidos.toList();
 
@@ -97,10 +98,17 @@ class FakePedidoRepository implements PedidoRepository {
   final List<Pedido> pedidos;
   int falhasRestantes;
   Object? falhaListarAbertos;
+  int falhasCategoriasRestantes;
   bool falharAtualizacao = false;
 
   @override
-  Future<List<Categoria>> carregarCategorias() async => categorias;
+  Future<List<Categoria>> carregarCategorias() async {
+    if (falhasCategoriasRestantes > 0) {
+      falhasCategoriasRestantes -= 1;
+      throw Exception('Falha de teste ao carregar categorias');
+    }
+    return categorias;
+  }
 
   @override
   Future<List<Pedido>> listarAbertos({

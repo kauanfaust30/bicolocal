@@ -116,6 +116,33 @@ class _PublicarPedidoPageState extends State<PublicarPedidoPage> {
               const Padding(
                 padding: EdgeInsets.all(8),
                 child: LinearProgressIndicator(),
+              )
+            else if (controller.erroCategorias != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        controller.erroCategorias!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: controller.carregarCategorias,
+                      child: const Text('Tentar novamente'),
+                    ),
+                  ],
+                ),
+              )
+            else if (controller.categorias.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  'Nenhuma categoria disponível. Tente novamente mais tarde.',
+                ),
               ),
             const SizedBox(height: 12),
             _campo(
@@ -160,7 +187,9 @@ class _PublicarPedidoPageState extends State<PublicarPedidoPage> {
             ],
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: controller.publicando ? null : _publicar,
+              onPressed: controller.publicando || _semCategorias(controller)
+                  ? null
+                  : _publicar,
               child: Text(
                 controller.publicando ? 'Publicando…' : 'Publicar pedido',
               ),
@@ -170,6 +199,11 @@ class _PublicarPedidoPageState extends State<PublicarPedidoPage> {
       ),
     ),
   );
+
+  bool _semCategorias(PedidoController controller) =>
+      !controller.carregandoCategorias &&
+      controller.erroCategorias == null &&
+      controller.categorias.isEmpty;
 
   Widget _campo(
     String label,
