@@ -72,9 +72,7 @@ void main() {
     expect(find.widgetWithText(ElevatedButton, 'Entrar'), findsOneWidget);
   });
 
-  testWidgets('explica e alterna entre os perfis sem perder a conta', (
-    tester,
-  ) async {
+  testWidgets('tela inicial explica o perfil da conta', (tester) async {
     await tester.pumpWidget(
       BicoLocalApp(
         contaRepository: FakeContaRepository(contaInicial: _contratante),
@@ -90,37 +88,6 @@ void main() {
       find.text('Publique e gerencie seus próprios pedidos.'),
       findsOneWidget,
     );
-    await tester.tap(find.text('Trocar para prestador'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Perfil ativo: Prestador'), findsOneWidget);
-    expect(
-      find.text('Consulte pedidos locais e candidate-se.'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('redireciona se o perfil muda em outra aba', (tester) async {
-    final contas = FakeContaRepository(
-      contaInicial: _contratante.copyWith(perfil: Perfil.prestador),
-    );
-    addTearDown(contas.dispose);
-    await tester.pumpWidget(
-      BicoLocalApp(
-        contaRepository: contas,
-        pedidoRepository: FakePedidoRepository(),
-        candidaturaRepository: FakeCandidaturaRepository(),
-        initialLocation: '/pedidos',
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Pedidos por cidade'), findsOneWidget);
-
-    contas.publicarConta(_contratante);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Perfil ativo: Contratante'), findsOneWidget);
-    expect(find.text('Pedidos por cidade'), findsNothing);
   });
 
   testWidgets(

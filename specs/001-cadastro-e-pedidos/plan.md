@@ -4,7 +4,7 @@
 
 ## Summary
 
-Implementar cadastro e entrada com e-mail e senha, alternância de perfil, publicação, busca por cidade, filtro por categoria, candidatura e aceite, além de edição/cancelamento e proteção de contato. O aplicativo usará Firebase Authentication e Cloud Firestore, com acesso aos dados encapsulado por repositórios. Provider gerenciará estado e `go_router` a navegação. Testes de comportamento começarão por `flutter test` e usarão repositórios falsos, sem Firebase real.
+Implementar cadastro e entrada com e-mail e senha, perfil definido no cadastro e imutável, publicação, busca por cidade, filtro por categoria, candidatura e aceite, além de edição/cancelamento e proteção de contato. O aplicativo usará Firebase Authentication e Cloud Firestore, com acesso aos dados encapsulado por repositórios. Provider gerenciará estado e `go_router` a navegação. Testes de comportamento começarão por `flutter test` e usarão repositórios falsos, sem Firebase real.
 
 **Decisão de escopo**: conforme FR-013/FR-018, o contato desta entrega é o e-mail usado no acesso à conta. Ele será armazenado separadamente dos dados públicos do perfil e pedido.
 

@@ -65,9 +65,8 @@ void main() {
       expect(repositorio.senhaUsada, 'senha-segura');
     });
 
-    test('altera o perfil ativo sem mudar a identidade da conta', () async {
-      final repositorio = _RepositorioContaFalso();
-      final dynamic service = ContaService(repositorio);
+    test('não oferece operação para alterar o perfil depois do cadastro', () {
+      final dynamic service = ContaService(_RepositorioContaFalso());
       const conta = Conta(
         uid: 'conta-1',
         email: 'ana@example.com',
@@ -77,16 +76,10 @@ void main() {
         perfil: Perfil.contratante,
       );
 
-      final Conta atualizada = await service.alterarPerfil(
-        conta: conta,
-        perfil: Perfil.prestador,
+      expect(
+        () => service.alterarPerfil(conta: conta, perfil: Perfil.prestador),
+        throwsNoSuchMethodError,
       );
-
-      expect(atualizada.perfil, Perfil.prestador);
-      expect(atualizada.uid, conta.uid);
-      expect(atualizada.email, conta.email);
-      expect(atualizada.nome, conta.nome);
-      expect(repositorio.uidPerfilAlterado, conta.uid);
     });
   });
 }
@@ -97,7 +90,6 @@ class _RepositorioContaFalso implements ContaRepository {
   final bool emailDuplicado;
   String? emailUsado;
   String? senhaUsada;
-  String? uidPerfilAlterado;
 
   @override
   Stream<Conta?> observarSessao() => const Stream.empty();
@@ -138,23 +130,5 @@ class _RepositorioContaFalso implements ContaRepository {
   }
 
   @override
-  dynamic noSuchMethod(Invocation invocation) {
-    if (invocation.memberName == #alterarPerfil) {
-      final argumentos = invocation.namedArguments;
-      final uid = argumentos[#uid] as String;
-      final perfil = argumentos[#perfil] as Perfil;
-      uidPerfilAlterado = uid;
-      return Future<Conta>.value(
-        Conta(
-          uid: uid,
-          email: 'ana@example.com',
-          nome: 'Ana Silva',
-          cidade: 'São Paulo',
-          bairro: 'Centro',
-          perfil: perfil,
-        ),
-      );
-    }
-    return super.noSuchMethod(invocation);
-  }
+  Future<void> sair() async {}
 }

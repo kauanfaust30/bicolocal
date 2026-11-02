@@ -72,19 +72,6 @@ class InicioPage extends StatelessWidget {
               const SizedBox(height: 12),
               Text(controller.erro!),
             ],
-            const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: controller.carregando
-                  ? null
-                  : () => controller.trocarPerfil(
-                      contratante ? Perfil.prestador : Perfil.contratante,
-                    ),
-              child: Text(
-                contratante
-                    ? 'Trocar para prestador'
-                    : 'Trocar para contratante',
-              ),
-            ),
           ],
         );
       },

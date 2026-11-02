@@ -20,12 +20,16 @@
 - Q: Quais dados do perfil aparecem a outros usuários? → A: Nome, e-mail e bairro do perfil permanecem privados; na lista, o prestador vê apenas os dados do serviço e a cidade necessária à busca regional.
 - Q: Como tratar dados ao excluir conta e quanto tempo manter pedidos encerrados? → A: Excluir os dados pessoais do perfil e contato com a conta; remover identificadores pessoais dos pedidos encerrados e eliminá-los após 12 meses.
 
+### Session 2026-11-02
+
+- Q: A pessoa pode trocar de perfil depois do cadastro? → A: Não. O perfil (contratante ou prestador) é escolhido uma única vez, no cadastro, e não pode ser alterado depois. Esta decisão substitui a alternância de perfil prevista anteriormente.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Publicar e encontrar pedidos locais (Priority: P1)
 
-Uma pessoa cria uma conta com e-mail e senha, escolhe se será contratante ou prestador e informa
-nome, cidade e bairro. O contratante publica um pedido com título, categoria, descrição, local,
+Uma pessoa cria uma conta com e-mail e senha, escolhe uma única vez se será contratante ou
+prestador e informa nome, cidade e bairro. O perfil escolhido no cadastro não pode ser alterado depois. O contratante publica um pedido com título, categoria, descrição, local,
 data desejada e valor. O prestador consulta pedidos abertos na região do seu perfil e encontra
 as informações necessárias para decidir se aquele serviço lhe interessa.
 
@@ -38,22 +42,25 @@ contratante e confirmar que o prestador consegue encontrá-lo na lista de pedido
 **Acceptance Scenarios**:
 
 1. **Given** que uma pessoa ainda não tem conta, **When** ela informa e-mail, senha, nome, cidade,
-   bairro e escolhe um perfil válido, **Then** sua conta é criada com o perfil e os dados informados.
+   bairro e escolhe um perfil válido, **Then** sua conta é criada com o perfil e os dados informados,
+   e a tela de cadastro avisa, antes da confirmação, que o perfil não poderá ser alterado depois.
 2. **Given** que existe uma conta ativa, **When** a pessoa informa e-mail e senha corretos,
    **Then** ela entra na conta associada ao seu perfil.
-3. **Given** que uma pessoa autenticada está usando um dos perfis, **When** ela seleciona o outro perfil,
-   **Then** o novo perfil passa a valer para as próximas ações e seus pedidos e candidaturas anteriores continuam vinculados à conta.
-4. **Given** que um contratante está autenticado, **When** informa título, categoria, descrição,
+3. **Given** que uma pessoa autenticada tem o perfil escolhido no cadastro, **When** ela usa o aplicativo,
+   **Then** nenhuma opção de troca de perfil é oferecida e as ações disponíveis são somente as do seu perfil.
+4. **Given** que uma pessoa autenticada tenta alterar o perfil da própria conta por qualquer meio,
+   **When** a alteração é enviada, **Then** ela é recusada e o perfil escolhido no cadastro permanece.
+5. **Given** que um contratante está autenticado, **When** informa título, categoria, descrição,
    local, data desejada, data de validade e valor válido, **Then** o pedido é publicado como aberto
    e aparece na lista de pedidos da região correspondente.
-5. **Given** que um prestador está autenticado, **When** consulta pedidos abertos da sua região,
+6. **Given** que um prestador está autenticado, **When** consulta pedidos abertos da sua região,
    **Then** cada resultado mostra título, categoria, descrição, local, data desejada e valor.
-6. **Given** que um pedido está aberto, **When** o prestador o consulta, **Then** os dados de
+7. **Given** que um pedido está aberto, **When** o prestador o consulta, **Then** os dados de
    contato pessoal das partes não são exibidos antes do aceite de uma candidatura.
-7. **Given** que uma pessoa tenta publicar um pedido com campo obrigatório ausente ou valor não
+8. **Given** que uma pessoa tenta publicar um pedido com campo obrigatório ausente ou valor não
    positivo, **When** envia o formulário, **Then** o pedido não é publicado e os campos inválidos
    são indicados em português com orientação para correção.
-8. **Given** que a data de validade é anterior à data atual ou posterior à data desejada do serviço,
+9. **Given** que a data de validade é anterior à data atual ou posterior à data desejada do serviço,
    **When** o contratante tenta publicar o pedido, **Then** a publicação é recusada e a regra de
    datas é informada em português.
 
@@ -143,7 +150,7 @@ prestador não pode.
 - Se ocorrer falha temporária ao publicar ou alterar pedido, os dados preenchidos permanecem no
   formulário e a pessoa pode tentar novamente sem criar uma operação duplicada.
 - Se uma pessoa tentar uma ação que o perfil ou vínculo com o pedido não permite, a ação é recusada,
-  nenhum dado protegido é retornado e a interface informa como voltar ou usar o perfil adequado.
+  nenhum dado protegido é retornado e a interface informa como voltar à área segura.
 - Antes de excluir a conta, a pessoa recebe aviso de que seus pedidos abertos/em andamento serão
   cancelados e suas candidaturas removidas; a exclusão só ocorre após confirmação.
 - Um pedido expirado ou cancelado não pode receber candidaturas nem ser aceito.
@@ -155,7 +162,7 @@ prestador não pode.
 ### Functional Requirements
 
 - **FR-001**: O sistema MUST permitir criar uma conta com e-mail, senha, nome, cidade, bairro e
-  perfil inicial de contratante ou prestador.
+  perfil de contratante ou prestador, escolhido uma única vez no cadastro.
 - **FR-002**: O sistema MUST rejeitar cadastro com e-mail já associado a uma conta e orientar a
   pessoa a entrar ou informar outro e-mail.
 - **FR-003**: O sistema MUST permitir que uma pessoa autenticada entre usando o e-mail e a senha
@@ -204,14 +211,14 @@ prestador não pode.
 - **FR-026**: O sistema MUST proteger dados pessoais durante armazenamento e transmissão por criptografia e MUST NOT incluí-los em mensagens de erro ou registros de diagnóstico. Tentativas sem autorização MUST ser recusadas sem retornar dados protegidos.
 - **FR-027**: Cada campo obrigatório inválido MUST receber mensagem em português junto ao campo, descrevendo o erro e como corrigi-lo. Falhas de entrada MUST informar que as credenciais não foram aceitas e permitir nova tentativa; falhas temporárias MUST oferecer nova tentativa quando aplicável. Se uma publicação ou alteração falhar, o sistema MUST manter os dados já preenchidos e oferecer nova tentativa sem duplicar a operação.
 - **FR-028**: Nas telas móveis, o conteúdo MUST caber sem rolagem horizontal a partir de 320 dp de largura; alvos de toque MUST medir pelo menos 48×48 dp; texto comum MUST ter contraste mínimo de 4,5:1 e texto grande contraste mínimo de 3:1; com ampliação de texto de 200%, os controles e conteúdos MUST continuar disponíveis sem perda de informação; elementos informativos MUST ter rótulo acessível.
-- **FR-029**: Uma pessoa autenticada MUST poder alternar seu perfil entre contratante e prestador a qualquer momento. A troca MUST valer para as próximas ações e MUST NOT desvincular, apagar ou alterar a autoria dos pedidos e candidaturas existentes. As permissões de gerenciamento de pedidos existentes MUST continuar vinculadas às relações definidas em FR-016, independentemente do perfil ativo.
-- **FR-030**: Ao escolher ou trocar de perfil, o sistema MUST explicar que o contratante pode publicar pedidos e o prestador pode consultar pedidos da cidade do perfil e candidatar-se. A interface MUST indicar as ações disponíveis para o perfil ativo e para cada pedido associado à pessoa.
-- **FR-031**: Quando uma ação for recusada por falta de permissão, o sistema MUST informar em português que a pessoa não tem autorização e indicar uma próxima ação segura, como voltar à lista ou entrar com o perfil adequado, sem revelar dados protegidos.
+- **FR-029**: O perfil da conta (contratante ou prestador) MUST ser definido no cadastro e MUST ser imutável depois. O sistema MUST NOT oferecer opção de troca de perfil e MUST recusar, também nas regras de acesso aos dados, qualquer tentativa de alterar o perfil de uma conta existente.
+- **FR-030**: Ao escolher o perfil no cadastro, o sistema MUST explicar que o contratante pode publicar pedidos e o prestador pode consultar pedidos da cidade do perfil e candidatar-se, e MUST avisar que a escolha não poderá ser alterada depois. A interface MUST indicar as ações disponíveis para o perfil da conta e para cada pedido associado à pessoa.
+- **FR-031**: Quando uma ação for recusada por falta de permissão, o sistema MUST informar em português que a pessoa não tem autorização e indicar uma próxima ação segura, como voltar à lista ou à tela inicial, sem revelar dados protegidos.
 - **FR-032**: Antes de excluir a conta, o sistema MUST informar que pedidos abertos ou em andamento publicados pela pessoa ou associados a ela como prestador escolhido serão cancelados e que suas candidaturas serão removidas. Após confirmação, MUST cancelar esses pedidos, remover as candidaturas da pessoa e excluir os dados pessoais do perfil e do contato. Pedidos cancelados MUST ser anonimizados e eliminados 12 meses após o cancelamento.
 
 ### Key Entities
 
-- **Conta**: pessoa cadastrada, com e-mail de acesso, nome, perfil escolhido, cidade e bairro.
+- **Conta**: pessoa cadastrada, com e-mail de acesso, nome, perfil escolhido no cadastro (imutável), cidade e bairro.
 - **Pedido**: serviço publicado por um contratante, com título, categoria, descrição, local, data
   desejada, data de validade, valor e estado.
 - **Candidatura**: manifestação de interesse de um prestador em realizar um pedido aberto; pode
@@ -246,12 +253,12 @@ prestador não pode.
 - **SC-013**: Para cada campo obrigatório inválido, a mensagem aparece junto ao campo e indica a correção; credenciais inválidas não autenticam e mostram orientação para nova tentativa. Se salvar pedido falhar, os campos permanecem preenchidos e uma nova tentativa não cria duplicata.
 - **SC-014**: Em verificação de segurança, os dados pessoais persistidos estão criptografados, conexões sem criptografia são recusadas, e inspeção de mensagens de erro e registros de diagnóstico não encontra dados pessoais.
 - **SC-015**: Em revisão automatizada de telas, texto comum atende contraste 4,5:1, texto grande atende 3:1, alvos de toque medem ao menos 48×48 dp e a interface funciona a 320 dp e com escala de texto de 200%.
-- **SC-016**: Em teste de cada perfil, a tela de escolha ou troca descreve as permissões do perfil ativo e mostra as ações correspondentes; uma ação não permitida mostra orientação para trocar de perfil ou voltar à área segura.
+- **SC-016**: Em teste de cada perfil, a tela de cadastro descreve as permissões de cada perfil e avisa que a escolha é definitiva; depois de entrar, a interface mostra apenas as ações do perfil da conta e não oferece troca; uma tentativa de alterar o perfil é recusada; uma ação não permitida mostra orientação para voltar à área segura.
 
 ## Assumptions
 
 - O cadastro usa e-mail e senha, e um e-mail identifica uma única conta.
-- Cada conta mantém um perfil ativo por vez, contratante ou prestador, e pode alternar entre eles. Pedidos e candidaturas anteriores permanecem vinculados à conta e mantêm sua autoria após a troca.
+- Cada conta tem um único perfil, contratante ou prestador, escolhido no cadastro e imutável. Quem precisar atuar no outro papel deve criar outra conta com outro e-mail.
 - As categorias disponíveis são definidas pelo produto e compartilhadas por contratantes e
   prestadores; criar ou editar categorias está fora do escopo.
 - O valor do pedido é expresso em reais e deve ser maior que zero.

@@ -16,6 +16,4 @@ abstract interface class ContaRepository {
   Future<Conta> entrar({required String email, required String senha});
 
   Future<void> sair();
-
-  Future<Conta> alterarPerfil({required String uid, required Perfil perfil});
 }

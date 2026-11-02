@@ -90,18 +90,6 @@ class ContaController extends ChangeNotifier {
     }
   }
 
-  Future<void> trocarPerfil(Perfil perfil) async {
-    final contaAtual = _conta;
-    if (contaAtual == null) {
-      erro = 'Entre na sua conta para trocar de perfil.';
-      notifyListeners();
-      return;
-    }
-    await _executar(
-      () => _service.alterarPerfil(conta: contaAtual, perfil: perfil),
-    );
-  }
-
   Future<void> _executar(Future<Conta> Function() operacao) async {
     carregando = true;
     erro = null;

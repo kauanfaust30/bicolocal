@@ -138,23 +138,6 @@ class FirebaseContaRepository implements ContaRepository {
     }
   }
 
-  @override
-  Future<Conta> alterarPerfil({
-    required String uid,
-    required Perfil perfil,
-  }) async {
-    final usuario = _auth.currentUser;
-    if (usuario == null || usuario.uid != uid) {
-      throw ContaErro.credenciaisInvalidas();
-    }
-    try {
-      await _usuarios.doc(uid).update({'perfil': perfil.name});
-      return await _carregarConta(usuario);
-    } on FirebaseException {
-      throw ContaErro.indisponivel();
-    }
-  }
-
   Future<Conta> _carregarConta(User usuario) async {
     try {
       final documento = await _usuarios.doc(usuario.uid).get();

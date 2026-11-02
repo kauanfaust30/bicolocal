@@ -49,25 +49,36 @@ description: "Tarefas de implementação para cadastro e pedidos locais"
 - [X] T011 [P] [US1] Escrever testes de unidade para criação de conta, entrada e mensagens de erro usando repositório falso em `test/features/conta/domain/conta_service_test.dart`
 - [X] T012 [P] [US1] Escrever testes unitários para validações de pedido: campos obrigatórios, valor maior que zero, data desejada hoje/futura e validade entre hoje e data desejada no fuso `America/Sao_Paulo` em `test/features/pedidos/domain/pedido_validator_test.dart`
 - [X] T013 [P] [US1] Escrever testes de repositório falso para publicação, consulta por cidade e limite de validade (visível durante todo o dia em `America/Sao_Paulo`, excluído a partir das 00:00 seguintes) em `test/features/pedidos/domain/pedido_repository_test.dart`
-- [X] T014 [P] [US1] Escrever testes de widget para cadastro/entrada, alternância de perfil, formulário de publicação, lista carregando/vazia/erro e apresentação dos campos do pedido em `test/features/conta/presentation/` e `test/features/pedidos/presentation/`; cobrir também a troca de perfil no teste de serviço da conta
+- [X] T014 [P] [US1] Escrever testes de widget para cadastro/entrada, formulário de publicação, lista carregando/vazia/erro e apresentação dos campos do pedido em `test/features/conta/presentation/` e `test/features/pedidos/presentation/`
 - [X] T015 [US1] Executar `flutter test` na raiz do projeto (`.`) e registrar a falha esperada dos novos testes antes de iniciar as implementações da US1
 
 ### Implementação da US1
 
 - [X] T016 [P] [US1] Criar entidade `Conta`, enum `Perfil` e contratos de repositório em `lib/features/conta/domain/conta.dart` e `lib/features/conta/domain/conta_repository.dart`
 - [X] T017 [US1] Implementar validação do cadastro e das mensagens em português em `lib/features/conta/domain/cadastro_validator.dart`, exigindo e-mail, senha, nome, cidade, bairro e perfil válido
-- [X] T018 [US1] Implementar serviço de conta para cadastro, entrada e troca de perfil, mapeando erros em português em `lib/features/conta/domain/conta_service.dart`
-- [X] T019 [US1] Implementar repositórios Firebase Authentication e perfil Firestore, persistindo troca de perfil sem expor contato no perfil público em `lib/features/conta/data/firebase_conta_repository.dart` e `lib/features/conta/data/conta_dto.dart`
+- [X] T018 [US1] Implementar serviço de conta para cadastro e entrada, mapeando erros em português em `lib/features/conta/domain/conta_service.dart`
+- [X] T019 [US1] Implementar repositórios Firebase Authentication e perfil Firestore, sem expor contato no perfil público, em `lib/features/conta/data/firebase_conta_repository.dart` e `lib/features/conta/data/conta_dto.dart`
 - [X] T020 [P] [US1] Criar entidade `Categoria`, entidade `Pedido`, regras de validação e contratos em `lib/features/pedidos/domain/categoria.dart`, `lib/features/pedidos/domain/pedido.dart` e `lib/features/pedidos/domain/pedido_repository.dart`; persistir valor em centavos e datas em ISO 8601
 - [X] T021 [US1] Implementar validação de pedido exigindo título, categoria, descrição, local, data desejada, validade e valor positivo em `lib/features/pedidos/domain/pedido_validator.dart`; comparar datas civis no fuso `America/Sao_Paulo`, validade hoje ou futura e não posterior à data desejada
 - [X] T022 [US1] Implementar DTO e repositório Firestore para categorias e pedidos em `lib/features/pedidos/data/pedido_dto.dart` e `lib/features/pedidos/data/firestore_pedido_repository.dart`; consulta de prestador corresponde à cidade e exclui pedidos após 00:00 do dia seguinte à validade em `America/Sao_Paulo`
 - [X] T023 [US1] Criar gerenciamento de estado Provider para conta e pedidos em `lib/features/conta/presentation/conta_controller.dart` e `lib/features/pedidos/presentation/pedido_controller.dart`, sem chamadas de banco nos widgets
-- [X] T024 [US1] Criar telas de cadastro e entrada com textos em português, explicação das permissões e troca de perfil ativa em `lib/features/conta/presentation/cadastro_page.dart`, `lib/features/conta/presentation/entrada_page.dart` e tela inicial
+- [X] T024 [US1] Criar telas de cadastro e entrada com textos em português e explicação das permissões de cada perfil em `lib/features/conta/presentation/cadastro_page.dart`, `lib/features/conta/presentation/entrada_page.dart` e tela inicial
 - [X] T025 [US1] Criar formulário de publicação e lista móvel de pedidos, incluindo estados carregando, vazio, erro com nova tentativa e datas em `dd/MM/aaaa`, em `lib/features/pedidos/presentation/publicar_pedido_page.dart` e `lib/features/pedidos/presentation/lista_pedidos_page.dart`
-- [X] T026 [US1] Conectar rotas de cadastro, entrada, publicação e lista à sessão/perfil ativo em `lib/core/router.dart` e composição Provider em `lib/core/app.dart`
+- [X] T026 [US1] Conectar rotas de cadastro, entrada, publicação e lista à sessão e ao perfil da conta em `lib/core/router.dart` e composição Provider em `lib/core/app.dart`
 - [X] T027 [US1] Executar `flutter test` na raiz do projeto (`.`) após a implementação da US1; testes relacionados aos critérios desta história passaram
 
 **Checkpoint**: US1 entrega o MVP de cadastro, publicação e descoberta regional independentemente das histórias de candidatura e filtro.
+
+### Mudança de requisito da US1 (2026-11-02): perfil imutável (FR-029, FR-030, SC-016)
+
+O perfil passa a ser escolhido uma única vez no cadastro. O código atual ainda tem a troca de perfil (`alterarPerfil`, `trocarPerfil` e o botão "Trocar para …" na tela inicial), que precisa sair.
+
+- [ ] T053 [P] [US1] Atualizar testes de serviço e de widget da conta: remover os testes de troca de perfil, verificar que a tela inicial não oferece troca e que o cadastro avisa que a escolha do perfil é definitiva, em `test/features/conta/domain/conta_service_test.dart` e `test/features/conta/presentation/cadastro_page_test.dart`; remover `alterarPerfil` do repositório falso em `test/support/fakes/fake_repositories.dart`
+- [ ] T054 [US1] Executar `flutter test` na raiz do projeto (`.`) e registrar a falha esperada dos testes atualizados antes de alterar o código
+- [ ] T055 [US1] Remover a troca de perfil do domínio, dos dados e da apresentação: `alterarPerfil` em `lib/features/conta/domain/conta_repository.dart`, `lib/features/conta/domain/conta_service.dart` e `lib/features/conta/data/firebase_conta_repository.dart`; `trocarPerfil` em `lib/features/conta/presentation/conta_controller.dart`; botão de troca em `lib/features/conta/presentation/inicio_page.dart`
+- [ ] T056 [US1] Adicionar ao cadastro o aviso de que o perfil não poderá ser alterado depois em `lib/features/conta/presentation/cadastro_page.dart`
+- [ ] T057 [US1] Impedir a alteração de `perfil` em `users/{uid}` nas regras (`firestore.rules`), retirando `perfil` dos campos editáveis no `update`, e atualizar `specs/001-cadastro-e-pedidos/contracts/firestore-security.md`
+- [ ] T058 [US1] Executar `flutter test` e `flutter analyze` na raiz do projeto (`.`) após a mudança e resolver falhas relacionadas
 
 ---
 

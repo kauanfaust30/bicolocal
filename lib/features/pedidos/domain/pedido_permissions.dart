@@ -4,6 +4,10 @@ import 'pedido.dart';
 class PedidoPermissions {
   const PedidoPermissions._();
 
+  static bool ehParte({required Pedido pedido, required String? uid}) =>
+      uid != null &&
+      (uid == pedido.contratanteUid || uid == pedido.prestadorEscolhidoUid);
+
   static bool podeEditarOuCancelar({
     required Pedido pedido,
     required String uid,

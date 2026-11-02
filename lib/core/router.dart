@@ -27,7 +27,10 @@ GoRouter criarRouter({
     if (caminho == '/pedidos' && conta.perfil != Perfil.prestador) {
       return '/inicio';
     }
-    if (caminho == '/pedidos/novo' && conta.perfil != Perfil.contratante) {
+    final somenteContratante =
+        caminho == '/pedidos/novo' ||
+        state.fullPath == '/pedidos/:pedidoId/candidaturas';
+    if (somenteContratante && conta.perfil != Perfil.contratante) {
       return '/inicio';
     }
     return null;

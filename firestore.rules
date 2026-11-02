@@ -86,9 +86,9 @@ service cloud.firestore {
       allow update: if signedIn()
         && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'nome', 'cidade', 'cidadeChave', 'bairro', 'perfil'
+          'nome', 'cidade', 'cidadeChave', 'bairro'
         ])
-        && request.resource.data.perfil in ['contratante', 'prestador']
+        && request.resource.data.perfil == resource.data.perfil
         && request.resource.data.nome is string
         && request.resource.data.nome.size() > 0
         && request.resource.data.cidade is string

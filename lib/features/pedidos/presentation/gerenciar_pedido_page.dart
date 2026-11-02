@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../candidaturas/presentation/candidatura_controller.dart';
@@ -7,6 +8,7 @@ import '../../conta/presentation/conta_controller.dart';
 import '../domain/categoria.dart';
 import '../domain/data_civil.dart';
 import '../domain/pedido.dart';
+import '../domain/pedido_permissions.dart';
 import 'pedido_controller.dart';
 
 class GerenciarPedidoPage extends StatefulWidget {
@@ -35,7 +37,9 @@ class _GerenciarPedidoPageState extends State<GerenciarPedidoPage> {
     body: FutureBuilder<Pedido?>(
       future: _pedido,
       builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
+        final contas = context.watch<ContaController>();
+        if (snapshot.connectionState != ConnectionState.done ||
+            contas.carregandoSessao) {
           return const Center(child: CircularProgressIndicator());
         }
         final pedido = snapshot.data;
@@ -43,6 +47,15 @@ class _GerenciarPedidoPageState extends State<GerenciarPedidoPage> {
           return const Center(
             child: Text('Não foi possível abrir este pedido.'),
           );
+        }
+        if (!PedidoPermissions.ehParte(
+          pedido: pedido,
+          uid: contas.conta?.uid,
+        )) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) context.go('/inicio');
+          });
+          return const SizedBox.shrink();
         }
         return _FormularioPedido(pedido: pedido);
       },

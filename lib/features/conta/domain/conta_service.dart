@@ -48,11 +48,4 @@ class ContaService {
   }
 
   Future<void> sair() => _repository.sair();
-
-  Future<Conta> alterarPerfil({required Conta conta, required Perfil perfil}) {
-    if (conta.uid.trim().isEmpty) {
-      throw StateError('Entre na conta para trocar de perfil.');
-    }
-    return _repository.alterarPerfil(uid: conta.uid, perfil: perfil);
-  }
 }

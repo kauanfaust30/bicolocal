@@ -69,19 +69,6 @@ class FakeContaRepository implements ContaRepository {
   Future<void> sair() async {
     publicarConta(null);
   }
-
-  @override
-  Future<Conta> alterarPerfil({
-    required String uid,
-    required Perfil perfil,
-  }) async {
-    final atual = contaInicial;
-    if (atual == null || atual.uid != uid) {
-      throw StateError('Conta não encontrada.');
-    }
-    publicarConta(atual.copyWith(perfil: perfil));
-    return contaInicial!;
-  }
 }
 
 class FakePedidoRepository implements PedidoRepository {
