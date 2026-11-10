@@ -24,6 +24,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Candidatar-se'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Candidatar-se'));
     await tester.pumpAndSettle();
 

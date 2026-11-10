@@ -23,7 +23,25 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Nenhum pedido aberto na sua cidade.'), findsOneWidget);
+    expect(find.text('Nenhum pedido por aqui ainda.'), findsOneWidget);
+    expect(find.text('Tente outra cidade ou categoria.'), findsOneWidget);
+    expect(find.byKey(const Key('ilustracao-estado')), findsOneWidget);
+  });
+
+  testWidgets('enquanto carrega mostra ilustração e texto amigável', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      BicoLocalApp(
+        contaRepository: FakeContaRepository(contaInicial: _prestador),
+        pedidoRepository: FakePedidoRepository(),
+        candidaturaRepository: FakeCandidaturaRepository(),
+        initialLocation: '/pedidos',
+      ),
+    );
+
+    expect(find.text('Buscando pedidos perto de você…'), findsOneWidget);
+    await tester.pumpAndSettle();
   });
 
   testWidgets('falha oferece nova tentativa e recupera lista vazia', (
@@ -41,9 +59,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Não foi possível carregar os pedidos.'), findsOneWidget);
+    expect(find.byKey(const Key('ilustracao-estado')), findsOneWidget);
     await tester.tap(find.text('Tentar novamente'));
     await tester.pumpAndSettle();
-    expect(find.text('Nenhum pedido aberto na sua cidade.'), findsOneWidget);
+    expect(find.text('Nenhum pedido por aqui ainda.'), findsOneWidget);
   });
 
   testWidgets('cartão apresenta os dados necessários para avaliar pedido', (
@@ -64,6 +83,19 @@ void main() {
     expect(find.text('Montagem de estante pequena'), findsOneWidget);
     expect(find.text('Local: Centro'), findsOneWidget);
     expect(find.text('R\$ 120,00'), findsOneWidget);
+
+    Finder noCartao(Finder alvo) =>
+        find.descendant(of: find.byType(Card), matching: alvo);
+    expect(noCartao(find.byIcon(Icons.home_repair_service)), findsOneWidget);
+    expect(noCartao(find.text('São Paulo')), findsOneWidget);
+    expect(noCartao(find.text('Válido até 01/01/2099')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('estado-pedido-1')),
+        matching: find.text('Aberto'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('formulário de publicação contém os campos da spec', (
@@ -84,17 +116,17 @@ void main() {
     expect(find.text('Novo pedido'), findsOneWidget);
     expect(find.byType(TextFormField), findsWidgets);
     expect(find.text('Categoria'), findsOneWidget);
-    await tester.scrollUntilVisible(
+    await tester.dragUntilVisible(
       find.text('Data desejada'),
-      300,
-      scrollable: find.byType(Scrollable).last,
+      find.byType(ListView),
+      const Offset(0, -300),
     );
     expect(find.text('Data desejada'), findsOneWidget);
     expect(find.text('Validade até'), findsOneWidget);
-    await tester.scrollUntilVisible(
+    await tester.dragUntilVisible(
       find.text('Publicar pedido'),
-      300,
-      scrollable: find.byType(Scrollable).last,
+      find.byType(ListView),
+      const Offset(0, -300),
     );
     expect(find.text('Publicar pedido'), findsOneWidget);
   });

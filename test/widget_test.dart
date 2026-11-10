@@ -13,7 +13,9 @@ void main() {
       ),
     );
 
+    await tester.pumpAndSettle();
+
     expect(find.text('Cadastro'), findsOneWidget);
-    expect(find.text('Escolha seu perfil'), findsOneWidget);
+    expect(find.text('Serviços rápidos perto de você'), findsOneWidget);
   });
 }

@@ -9,6 +9,7 @@ import '../features/candidaturas/presentation/candidatura_controller.dart';
 import '../features/pedidos/domain/pedido_repository.dart';
 import '../features/pedidos/presentation/pedido_controller.dart';
 import 'router.dart';
+import 'tema.dart';
 
 class BicoLocalApp extends StatefulWidget {
   const BicoLocalApp({
@@ -66,22 +67,30 @@ class _BicoLocalAppState extends State<BicoLocalApp> {
     ],
     child: MaterialApp.router(
       title: 'BicoLocal',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF075E46),
-          primary: const Color(0xFF075E46),
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF8FAF9),
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size.fromHeight(48),
-          ),
-        ),
-      ),
+      theme: criarTemaBicoLocal(),
+      builder: (context, child) => _LarguraMaxima(child: child),
       routerConfig: _router,
+    ),
+  );
+}
+
+/// Em telas largas (navegador, tablet), centraliza o app com até 600 px
+/// para o conteúdo não esticar. No celular, usa a largura toda.
+class _LarguraMaxima extends StatelessWidget {
+  const _LarguraMaxima({required this.child});
+
+  static const larguraMaxima = 600.0;
+
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: larguraMaxima),
+        child: child ?? const SizedBox.shrink(),
+      ),
     ),
   );
 }

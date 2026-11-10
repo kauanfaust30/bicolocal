@@ -114,10 +114,17 @@ service cloud.firestore {
     }
 
     match /requests/{requestId} {
-      allow get, list: if signedIn()
+            allow get: if signedIn()
         && ((resource.data.estado == 'aberto'
               && isProfile('prestador')
               && validForToday(resource.data))
+          || resource.data.contratanteUid == request.auth.uid
+          || (resource.data.estado == 'em_andamento'
+              && resource.data.prestadorEscolhidoUid == request.auth.uid));
+
+      allow list: if signedIn()
+        && ((resource.data.estado == 'aberto'
+              && isProfile('prestador'))
           || resource.data.contratanteUid == request.auth.uid
           || (resource.data.estado == 'em_andamento'
               && resource.data.prestadorEscolhidoUid == request.auth.uid));

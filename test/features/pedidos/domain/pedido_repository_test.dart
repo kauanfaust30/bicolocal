@@ -18,13 +18,30 @@ void main() {
 
       expect(repositorio.ultimaCidade, 'São Paulo');
       expect(repositorio.ultimaDataCivil, '2026-10-26');
+      expect(repositorio.ultimaCategoriaId, isNull);
     },
   );
+
+  test('repassa a categoria do filtro e a cidade sem espaços', () async {
+    final repositorio = _RepositorioPedidosFalso();
+    final service = PedidoService(repositorio);
+
+    await service.listarAbertos(
+      cidade: '  Rio do Sul ',
+      agoraUtc: DateTime.utc(2026, 11, 9, 15),
+      categoriaId: 'limpeza',
+    );
+
+    expect(repositorio.ultimaCidade, 'Rio do Sul');
+    expect(repositorio.ultimaDataCivil, '2026-11-09');
+    expect(repositorio.ultimaCategoriaId, 'limpeza');
+  });
 }
 
 class _RepositorioPedidosFalso implements PedidoRepository {
   String? ultimaCidade;
   String? ultimaDataCivil;
+  String? ultimaCategoriaId;
 
   @override
   Future<List<Categoria>> carregarCategorias() async => const [];
@@ -37,6 +54,7 @@ class _RepositorioPedidosFalso implements PedidoRepository {
   }) async {
     ultimaCidade = cidade;
     ultimaDataCivil = dataCivil;
+    ultimaCategoriaId = categoriaId;
     return const [];
   }
 

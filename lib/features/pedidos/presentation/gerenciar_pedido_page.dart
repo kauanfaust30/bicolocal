@@ -6,9 +6,10 @@ import '../../candidaturas/presentation/candidatura_controller.dart';
 import '../../conta/domain/conta.dart';
 import '../../conta/presentation/conta_controller.dart';
 import '../domain/categoria.dart';
-import '../domain/data_civil.dart';
 import '../domain/pedido.dart';
 import '../domain/pedido_permissions.dart';
+import 'categoria_visual.dart';
+import 'formulario_pedido_widgets.dart';
 import 'pedido_controller.dart';
 
 class GerenciarPedidoPage extends StatefulWidget {
@@ -162,65 +163,124 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
           }
         });
       }
-      return ListView(
-        padding: const EdgeInsets.all(20),
+      final erros = controller.errosCampos;
+      return Column(
         children: [
-          _campo('Título', _titulo, erro: controller.errosCampos['titulo']),
-          const SizedBox(height: 12),
-          _categoriaCampo(controller),
-          const SizedBox(height: 12),
-          _campo(
-            'Descrição',
-            _descricao,
-            erro: controller.errosCampos['descricao'],
-            maxLines: 3,
-          ),
-          const SizedBox(height: 12),
-          _campo('Cidade', _cidade, erro: controller.errosCampos['cidade']),
-          const SizedBox(height: 12),
-          _campo('Local', _local, erro: controller.errosCampos['local']),
-          const SizedBox(height: 12),
-          _seletorData(
-            label: 'Data desejada',
-            data: _dataDesejada,
-            erro: controller.errosCampos['dataDesejada'],
-            aoSelecionar: () => _selecionarData(validade: false),
-          ),
-          const SizedBox(height: 12),
-          _seletorData(
-            label: 'Validade até',
-            data: _validadeAte,
-            erro: controller.errosCampos['validadeAte'],
-            aoSelecionar: () => _selecionarData(validade: true),
-          ),
-          const SizedBox(height: 12),
-          _campo(
-            'Valor em reais',
-            _valor,
-            erro: controller.errosCampos['valorCentavos'],
-            teclado: TextInputType.number,
-          ),
-          if (controller.erro != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              controller.erro!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+              children: [
+                SecaoFormulario(
+                  icone: Icons.assignment_outlined,
+                  titulo: 'O que você precisa',
+                  children: [
+                    _campo(
+                      'Título',
+                      _titulo,
+                      erro: erros['titulo'],
+                      icone: Icons.short_text,
+                      ajuda: AjudaPedido.titulo,
+                    ),
+                    _categoriaCampo(controller),
+                    _campo(
+                      'Descrição',
+                      _descricao,
+                      erro: erros['descricao'],
+                      icone: Icons.notes,
+                      ajuda: AjudaPedido.descricao,
+                      maxLines: 3,
+                    ),
+                  ],
+                ),
+                SecaoFormulario(
+                  icone: Icons.map_outlined,
+                  titulo: 'Onde',
+                  children: [
+                    _campo(
+                      'Cidade',
+                      _cidade,
+                      erro: erros['cidade'],
+                      icone: Icons.location_city,
+                      ajuda: AjudaPedido.cidade,
+                    ),
+                    _campo(
+                      'Local',
+                      _local,
+                      erro: erros['local'],
+                      icone: Icons.place_outlined,
+                      ajuda: AjudaPedido.local,
+                    ),
+                  ],
+                ),
+                SecaoFormulario(
+                  icone: Icons.event_note_outlined,
+                  titulo: 'Quando e quanto',
+                  children: [
+                    CampoData(
+                      rotulo: 'Data desejada',
+                      icone: Icons.event,
+                      data: _dataDesejada,
+                      ajuda: AjudaPedido.dataDesejada,
+                      erro: erros['dataDesejada'],
+                      aoSelecionar: () => _selecionarData(validade: false),
+                    ),
+                    CampoData(
+                      rotulo: 'Validade até',
+                      icone: Icons.event_available,
+                      data: _validadeAte,
+                      ajuda: AjudaPedido.validade,
+                      erro: erros['validadeAte'],
+                      aoSelecionar: () => _selecionarData(validade: true),
+                    ),
+                    _campo(
+                      'Valor em reais',
+                      _valor,
+                      erro: erros['valorCentavos'],
+                      icone: Icons.payments_outlined,
+                      ajuda: AjudaPedido.valor,
+                      teclado: TextInputType.number,
+                    ),
+                  ],
+                ),
+                _contato(conta),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: controller.publicando ? null : _cancelar,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  icon: const Icon(Icons.cancel_outlined),
+                  label: const Text('Cancelar pedido'),
+                ),
+              ],
             ),
-          ],
-          if (controller.mensagem != null) ...[
-            const SizedBox(height: 12),
-            Text(controller.mensagem!),
-          ],
-          _contato(conta),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: controller.publicando ? null : _salvar,
-            child: const Text('Salvar alterações'),
           ),
-          const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: controller.publicando ? null : _cancelar,
-            child: const Text('Cancelar pedido'),
+          BarraAcaoFixa(
+            children: [
+              if (controller.erro != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    controller.erro!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+              if (controller.mensagem != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(controller.mensagem!),
+                ),
+              ElevatedButton.icon(
+                onPressed: controller.publicando ? null : _salvar,
+                icon: const Icon(Icons.save_outlined),
+                label: const Text('Salvar alterações'),
+              ),
+            ],
           ),
         ],
       );
@@ -250,13 +310,21 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
     String rotulo,
     TextEditingController controller, {
     required String? erro,
+    required IconData icone,
+    String? ajuda,
     int maxLines = 1,
     TextInputType? teclado,
   }) => TextFormField(
     controller: controller,
     maxLines: maxLines,
     keyboardType: teclado,
-    decoration: InputDecoration(labelText: rotulo, errorText: erro),
+    decoration: InputDecoration(
+      labelText: rotulo,
+      prefixIcon: Icon(icone),
+      helperText: ajuda,
+      helperMaxLines: 2,
+      errorText: erro,
+    ),
   );
 
   Widget _categoriaCampo(PedidoController controller) {
@@ -272,13 +340,23 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
       initialValue: existe ? _categoria!.id : null,
       decoration: InputDecoration(
         labelText: 'Categoria',
+        prefixIcon: const Icon(Icons.category_outlined),
         errorText: controller.errosCampos['categoriaId'],
       ),
       items: controller.categorias
           .map(
             (categoria) => DropdownMenuItem(
               value: categoria.id,
-              child: Text(categoria.nome),
+              child: Row(
+                children: [
+                  Icon(
+                    CategoriaVisual.daCategoria(categoria).icone,
+                    color: CategoriaVisual.daCategoria(categoria).cor,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(categoria.nome),
+                ],
+              ),
             ),
           )
           .toList(),
@@ -311,34 +389,6 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
       }
     });
   }
-
-  Widget _seletorData({
-    required String label,
-    required DateTime? data,
-    required String? erro,
-    required VoidCallback aoSelecionar,
-  }) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      OutlinedButton(
-        onPressed: aoSelecionar,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            data == null ? label : '$label: ${DataCivil.formatar(data)}',
-          ),
-        ),
-      ),
-      if (erro != null)
-        Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: Text(
-            erro,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-        ),
-    ],
-  );
 
   int _valorEmCentavos(String texto) {
     final valor = double.tryParse(

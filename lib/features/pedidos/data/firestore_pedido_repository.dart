@@ -5,6 +5,7 @@ import '../domain/data_civil.dart';
 import '../domain/pedido.dart';
 import '../domain/pedido_permissions.dart';
 import '../domain/pedido_repository.dart';
+import 'consulta_pedidos_abertos.dart';
 import 'pedido_dto.dart';
 
 class FirestorePedidoRepository implements PedidoRepository {
@@ -32,22 +33,14 @@ class FirestorePedidoRepository implements PedidoRepository {
     required String dataCivil,
     String? categoriaId,
   }) async {
-    Query<Map<String, dynamic>> consulta = _firestore
-        .collection('requests')
-        .where('estado', isEqualTo: 'aberto')
-        .where('cidadeChave', isEqualTo: cidade.trim().toLowerCase());
-    if (categoriaId != null) {
-      consulta = consulta.where('categoriaId', isEqualTo: categoriaId);
-    }
-    final snapshot = await consulta
-        .where(
-          'validadeAteDia',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(
-            DataCivil.inicioDiaUtc(dataCivil),
-          ),
-        )
-        .orderBy('validadeAteDia')
-        .get();
+    final snapshot = await ConsultaPedidosAbertos.aplicar(
+      _firestore.collection('requests'),
+      ConsultaPedidosAbertos.filtros(
+        cidade: cidade,
+        dataCivil: dataCivil,
+        categoriaId: categoriaId,
+      ),
+    ).get();
     return snapshot.docs
         .map(
           (documento) => PedidoDto.fromDocument(documento.id, documento.data()),

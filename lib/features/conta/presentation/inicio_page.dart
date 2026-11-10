@@ -20,6 +20,7 @@ class InicioPage extends StatelessWidget {
             label: const Text('Sair'),
           ),
         ),
+        const SizedBox(width: 8),
       ],
     ),
     body: Consumer<ContaController>(
@@ -48,33 +49,145 @@ class InicioPage extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            Text('Perfil ativo: ${conta.perfil.rotulo}'),
-            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: _SeloPerfil(perfil: conta.perfil),
+            ),
+            const SizedBox(height: 12),
             Text(
               contratante
                   ? 'Publique e gerencie seus próprios pedidos.'
                   : 'Consulte pedidos locais e candidate-se.',
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () =>
-                  context.go(contratante ? '/pedidos/novo' : '/pedidos'),
-              child: Text(
-                contratante ? 'Publicar pedido' : 'Ver pedidos da minha cidade',
+            const SizedBox(height: 24),
+            if (contratante)
+              const _OpcaoInicio(
+                icone: Icons.add_circle_outline,
+                titulo: 'Publicar pedido',
+                descricao: 'Descreva o serviço e encontre ajuda perto de você.',
+                destino: '/pedidos/novo',
+              )
+            else
+              const _OpcaoInicio(
+                icone: Icons.travel_explore,
+                titulo: 'Ver pedidos da minha cidade',
+                descricao:
+                    'Encontre bicos abertos na sua região e candidate-se.',
+                destino: '/pedidos',
               ),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () => context.go('/meus-pedidos'),
-              child: const Text('Meus pedidos'),
+            const SizedBox(height: 12),
+            _OpcaoInicio(
+              icone: Icons.assignment_outlined,
+              titulo: 'Meus pedidos',
+              descricao: contratante
+                  ? 'Acompanhe candidaturas, edite ou cancele seus pedidos.'
+                  : 'Veja os pedidos em que você foi escolhido.',
+              destino: '/meus-pedidos',
+              secundaria: true,
             ),
             if (controller.erro != null) ...[
               const SizedBox(height: 12),
-              Text(controller.erro!),
+              Text(
+                controller.erro!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ],
           ],
         );
       },
     ),
   );
+}
+
+class _SeloPerfil extends StatelessWidget {
+  const _SeloPerfil({required this.perfil});
+
+  final Perfil perfil;
+
+  @override
+  Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final contratante = perfil == Perfil.contratante;
+    return Semantics(
+      label: 'Perfil: ${perfil.rotulo}',
+      excludeSemantics: true,
+      child: Chip(
+        key: const Key('selo-perfil'),
+        avatar: Icon(
+          contratante ? Icons.home_outlined : Icons.handyman_outlined,
+          color: cores.onSecondaryContainer,
+        ),
+        label: Text(perfil.rotulo),
+        backgroundColor: cores.secondaryContainer,
+        labelStyle: TextStyle(color: cores.onSecondaryContainer),
+        side: BorderSide.none,
+        shape: const StadiumBorder(),
+      ),
+    );
+  }
+}
+
+class _OpcaoInicio extends StatelessWidget {
+  const _OpcaoInicio({
+    required this.icone,
+    required this.titulo,
+    required this.descricao,
+    required this.destino,
+    this.secundaria = false,
+  });
+
+  final IconData icone;
+  final String titulo;
+  final String descricao;
+  final String destino;
+  final bool secundaria;
+
+  @override
+  Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.go(destino),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: secundaria
+                      ? cores.secondaryContainer
+                      : cores.primary,
+                  child: Icon(
+                    icone,
+                    size: 28,
+                    color: secundaria
+                        ? cores.onSecondaryContainer
+                        : cores.onPrimary,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        titulo,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(descricao),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: cores.onSurfaceVariant),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

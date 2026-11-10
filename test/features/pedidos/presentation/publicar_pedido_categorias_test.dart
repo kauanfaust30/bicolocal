@@ -42,6 +42,7 @@ void main() {
       await tester.tap(find.byType(DropdownButtonFormField<Categoria>));
       await tester.pumpAndSettle();
       expect(find.text('Reparos'), findsWidgets);
+      expect(find.byIcon(Icons.home_repair_service), findsWidgets);
     },
   );
 

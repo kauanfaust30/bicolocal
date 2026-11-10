@@ -3,9 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/async/async_state.dart';
+import '../../../core/widgets/estado_ilustrado.dart';
+import '../../conta/domain/perfil.dart';
 import '../../conta/presentation/conta_controller.dart';
 import '../domain/pedido.dart';
 import '../domain/pedido_permissions.dart';
+import 'pedido_card.dart';
 import 'pedido_controller.dart';
 
 class MeusPedidosPage extends StatefulWidget {
@@ -40,36 +43,41 @@ class _MeusPedidosPageState extends State<MeusPedidosPage> {
         final estado = controller.estadoGerenciaveis;
         if (estado.status == AsyncStatus.inicial ||
             estado.status == AsyncStatus.carregando) {
-          return const Center(child: CircularProgressIndicator());
+          return const EstadoIlustrado.carregando(
+            titulo: 'Carregando seus pedidos…',
+          );
         }
         if (estado.status == AsyncStatus.erro) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  estado.mensagemErro ??
-                      'Não foi possível carregar seus pedidos.',
-                ),
-                ElevatedButton(
-                  onPressed: () =>
-                      controller.carregarGerenciaveis(contaController.conta),
-                  child: const Text('Tentar novamente'),
-                ),
-              ],
+          return EstadoIlustrado(
+            icone: Icons.cloud_off_outlined,
+            erro: true,
+            titulo:
+                estado.mensagemErro ??
+                'Não foi possível carregar seus pedidos.',
+            acao: ElevatedButton.icon(
+              onPressed: () =>
+                  controller.carregarGerenciaveis(contaController.conta),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Tentar novamente'),
             ),
           );
         }
         final pedidos = estado.data ?? const <Pedido>[];
         if (pedidos.isEmpty) {
-          return const Center(
-            child: Text('Você ainda não tem pedidos relacionados.'),
+          final contratante =
+              contaController.conta?.perfil == Perfil.contratante;
+          return EstadoIlustrado(
+            icone: Icons.inventory_2_outlined,
+            titulo: 'Você ainda não tem pedidos.',
+            mensagem: contratante
+                ? 'Publique um pedido para encontrar ajuda perto de você.'
+                : 'Quando uma candidatura sua for aceita, o pedido aparece aqui.',
           );
         }
         return ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: pedidos.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 8),
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final pedido = pedidos[index];
             final conta = contaController.conta;
@@ -81,47 +89,31 @@ class _MeusPedidosPageState extends State<MeusPedidosPage> {
                   uid: conta.uid,
                   agoraUtc: DateTime.now().toUtc(),
                 );
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      pedido.titulo,
-                      style: Theme.of(context).textTheme.titleMedium,
+            return PedidoCard(
+              pedido: pedido,
+              acoes: [
+                if (autor && pedido.estado == EstadoPedido.aberto)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          context.go('/pedidos/${pedido.id}/candidaturas'),
+                      icon: const Icon(Icons.people_outline),
+                      label: const Text('Ver candidaturas'),
                     ),
-                    const SizedBox(height: 4),
-                    Text(_rotuloEstado(pedido.estado)),
-                    if (autor && pedido.estado == EstadoPedido.aberto) ...[
-                      const SizedBox(height: 8),
-                      OutlinedButton(
-                        onPressed: () =>
-                            context.go('/pedidos/${pedido.id}/candidaturas'),
-                        child: const Text('Ver candidaturas'),
-                      ),
-                    ],
-                    if (podeGerenciar) ...[
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () =>
-                            context.go('/pedidos/${pedido.id}/gerenciar'),
-                        child: const Text('Gerenciar pedido'),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+                  ),
+                if (podeGerenciar)
+                  ElevatedButton.icon(
+                    onPressed: () =>
+                        context.go('/pedidos/${pedido.id}/gerenciar'),
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Gerenciar pedido'),
+                  ),
+              ],
             );
           },
         );
       },
     ),
   );
-
-  String _rotuloEstado(EstadoPedido estado) => switch (estado) {
-    EstadoPedido.aberto => 'Aberto',
-    EstadoPedido.emAndamento => 'Em andamento',
-    EstadoPedido.cancelado => 'Cancelado',
-  };
 }

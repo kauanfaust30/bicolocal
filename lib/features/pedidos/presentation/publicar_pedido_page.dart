@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../conta/presentation/conta_controller.dart';
 import '../domain/categoria.dart';
 import '../presentation/pedido_controller.dart';
+import 'categoria_visual.dart';
+import 'formulario_pedido_widgets.dart';
 
 class PublicarPedidoPage extends StatefulWidget {
   const PublicarPedidoPage({super.key});
@@ -91,113 +93,183 @@ class _PublicarPedidoPageState extends State<PublicarPedidoPage> {
     appBar: AppBar(title: const Text('Novo pedido')),
     body: SafeArea(
       child: Consumer<PedidoController>(
-        builder: (context, controller, _) => ListView(
-          padding: const EdgeInsets.all(20),
+        builder: (context, controller, _) => Column(
           children: [
-            _campo('Título', _titulo, 'titulo', controller),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<Categoria>(
-              initialValue: _categoria,
-              decoration: InputDecoration(
-                labelText: 'Categoria',
-                errorText: controller.errosCampos['categoriaId'],
-              ),
-              items: controller.categorias
-                  .map(
-                    (categoria) => DropdownMenuItem(
-                      value: categoria,
-                      child: Text(categoria.nome),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (categoria) => setState(() => _categoria = categoria),
-            ),
-            if (controller.carregandoCategorias)
-              const Padding(
-                padding: EdgeInsets.all(8),
-                child: LinearProgressIndicator(),
-              )
-            else if (controller.erroCategorias != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        controller.erroCategorias!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                children: [
+                  SecaoFormulario(
+                    icone: Icons.assignment_outlined,
+                    titulo: 'O que você precisa',
+                    children: [
+                      _campo(
+                        'Título',
+                        _titulo,
+                        'titulo',
+                        controller,
+                        icone: Icons.short_text,
+                        ajuda: AjudaPedido.titulo,
+                      ),
+                      _categoriaCampo(controller),
+                      _campo(
+                        'Descrição',
+                        _descricao,
+                        'descricao',
+                        controller,
+                        icone: Icons.notes,
+                        ajuda: AjudaPedido.descricao,
+                        maxLines: 3,
+                      ),
+                    ],
+                  ),
+                  SecaoFormulario(
+                    icone: Icons.map_outlined,
+                    titulo: 'Onde',
+                    children: [
+                      _campo(
+                        'Cidade',
+                        _cidade,
+                        'cidade',
+                        controller,
+                        icone: Icons.location_city,
+                        ajuda: AjudaPedido.cidade,
+                      ),
+                      _campo(
+                        'Local do serviço',
+                        _local,
+                        'local',
+                        controller,
+                        icone: Icons.place_outlined,
+                        ajuda: AjudaPedido.local,
+                      ),
+                    ],
+                  ),
+                  SecaoFormulario(
+                    icone: Icons.event_note_outlined,
+                    titulo: 'Quando e quanto',
+                    children: [
+                      CampoData(
+                        rotulo: 'Data desejada',
+                        icone: Icons.event,
+                        data: _dataDesejada,
+                        ajuda: AjudaPedido.dataDesejada,
+                        erro: controller.errosCampos['dataDesejada'],
+                        aoSelecionar: () => _selecionarData(validade: false),
+                      ),
+                      CampoData(
+                        rotulo: 'Validade até',
+                        icone: Icons.event_available,
+                        data: _validadeAte,
+                        ajuda: AjudaPedido.validade,
+                        erro: controller.errosCampos['validadeAte'],
+                        aoSelecionar: () => _selecionarData(validade: true),
+                      ),
+                      _campo(
+                        'Valor em reais',
+                        _valor,
+                        'valorCentavos',
+                        controller,
+                        icone: Icons.payments_outlined,
+                        ajuda: AjudaPedido.valor,
+                        teclado: const TextInputType.numberWithOptions(
+                          decimal: true,
                         ),
                       ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            BarraAcaoFixa(
+              children: [
+                if (controller.erro != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      controller.erro!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
-                    TextButton(
-                      onPressed: controller.carregarCategorias,
-                      child: const Text('Tentar novamente'),
-                    ),
-                  ],
+                  ),
+                ElevatedButton.icon(
+                  onPressed: controller.publicando || _semCategorias(controller)
+                      ? null
+                      : _publicar,
+                  icon: const Icon(Icons.send_outlined),
+                  label: Text(
+                    controller.publicando ? 'Publicando…' : 'Publicar pedido',
+                  ),
                 ),
-              )
-            else if (controller.categorias.isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text(
-                  'Nenhuma categoria disponível. Tente novamente mais tarde.',
-                ),
-              ),
-            const SizedBox(height: 12),
-            _campo(
-              'Descrição',
-              _descricao,
-              'descricao',
-              controller,
-              maxLines: 3,
-            ),
-            const SizedBox(height: 12),
-            _campo('Cidade', _cidade, 'cidade', controller),
-            const SizedBox(height: 12),
-            _campo('Local do serviço', _local, 'local', controller),
-            const SizedBox(height: 12),
-            _campo(
-              'Valor em reais',
-              _valor,
-              'valorCentavos',
-              controller,
-              teclado: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: 12),
-            _seletorData(
-              label: 'Data desejada',
-              data: _dataDesejada,
-              erro: controller.errosCampos['dataDesejada'],
-              aoSelecionar: () => _selecionarData(validade: false),
-            ),
-            const SizedBox(height: 8),
-            _seletorData(
-              label: 'Validade até',
-              data: _validadeAte,
-              erro: controller.errosCampos['validadeAte'],
-              aoSelecionar: () => _selecionarData(validade: true),
-            ),
-            if (controller.erro != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                controller.erro!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: controller.publicando || _semCategorias(controller)
-                  ? null
-                  : _publicar,
-              child: Text(
-                controller.publicando ? 'Publicando…' : 'Publicar pedido',
-              ),
+              ],
             ),
           ],
         ),
       ),
     ),
+  );
+
+  Widget _categoriaCampo(PedidoController controller) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      DropdownButtonFormField<Categoria>(
+        initialValue: _categoria,
+        decoration: InputDecoration(
+          labelText: 'Categoria',
+          prefixIcon: const Icon(Icons.category_outlined),
+          errorText: controller.errosCampos['categoriaId'],
+        ),
+        items: controller.categorias
+            .map(
+              (categoria) => DropdownMenuItem(
+                value: categoria,
+                child: Row(
+                  children: [
+                    Icon(
+                      CategoriaVisual.daCategoria(categoria).icone,
+                      color: CategoriaVisual.daCategoria(categoria).cor,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(categoria.nome),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+        onChanged: (categoria) => setState(() => _categoria = categoria),
+      ),
+      if (controller.carregandoCategorias)
+        const Padding(
+          padding: EdgeInsets.all(8),
+          child: LinearProgressIndicator(),
+        )
+      else if (controller.erroCategorias != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  controller.erroCategorias!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+              TextButton(
+                onPressed: controller.carregarCategorias,
+                child: const Text('Tentar novamente'),
+              ),
+            ],
+          ),
+        )
+      else if (controller.categorias.isEmpty)
+        const Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: Text(
+            'Nenhuma categoria disponível. Tente novamente mais tarde.',
+          ),
+        ),
+    ],
   );
 
   bool _semCategorias(PedidoController controller) =>
@@ -210,6 +282,8 @@ class _PublicarPedidoPageState extends State<PublicarPedidoPage> {
     TextEditingController textController,
     String chave,
     PedidoController estado, {
+    required IconData icone,
+    String? ajuda,
     int maxLines = 1,
     TextInputType? teclado,
   }) => TextFormField(
@@ -218,38 +292,11 @@ class _PublicarPedidoPageState extends State<PublicarPedidoPage> {
     maxLines: maxLines,
     decoration: InputDecoration(
       labelText: label,
+      prefixIcon: Icon(icone),
+      helperText: ajuda,
+      helperMaxLines: 2,
       errorText: estado.errosCampos[chave],
     ),
-  );
-
-  Widget _seletorData({
-    required String label,
-    required DateTime? data,
-    required String? erro,
-    required VoidCallback aoSelecionar,
-  }) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      OutlinedButton(
-        onPressed: aoSelecionar,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            data == null
-                ? label
-                : '$label: ${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}',
-          ),
-        ),
-      ),
-      if (erro != null)
-        Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: Text(
-            erro,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-        ),
-    ],
   );
 
   int? _valorEmCentavos(String texto) {

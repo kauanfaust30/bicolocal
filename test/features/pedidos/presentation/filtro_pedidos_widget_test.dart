@@ -31,18 +31,36 @@ void main() {
     expect(find.text('Montar uma estante'), findsOneWidget);
     expect(find.text('Limpar filtro'), findsNothing);
 
-    await tester.tap(find.byKey(const Key('filtro-categoria')));
+    expect(find.byKey(const Key('filtro-categoria')), findsOneWidget);
+    expect(find.byType(DropdownButtonFormField<String>), findsNothing);
+    expect(_chip(tester, 'filtro-categoria-todas').selected, isTrue);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('filtro-categoria-limpeza')),
+        matching: find.byIcon(Icons.cleaning_services),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('filtro-categoria-reparos')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Reparos').last);
-    await tester.pumpAndSettle();
+    expect(_chip(tester, 'filtro-categoria-reparos').selected, isTrue);
+    expect(_chip(tester, 'filtro-categoria-todas').selected, isFalse);
 
     expect(find.text('Montar uma estante'), findsOneWidget);
     expect(find.text('Limpeza da casa'), findsNothing);
     expect(find.text('Limpar filtro'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Limpar filtro'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Limpar filtro'));
     await tester.pumpAndSettle();
     expect(find.text('Montar uma estante'), findsOneWidget);
+    await tester.dragUntilVisible(
+      find.text('Limpeza da casa'),
+      find.byType(ListView).last,
+      const Offset(0, -200),
+    );
     expect(find.text('Limpeza da casa'), findsOneWidget);
   });
 
@@ -66,15 +84,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('filtro-categoria')));
+    await tester.ensureVisible(
+      find.byKey(const Key('filtro-categoria-jardinagem')),
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Jardinagem').last);
+    await tester.tap(find.byKey(const Key('filtro-categoria-jardinagem')));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Nenhum pedido aberto para esta cidade e categoria.'),
-      findsOneWidget,
-    );
+    expect(find.text('Nenhum pedido por aqui ainda.'), findsOneWidget);
+    expect(find.text('Tente outra cidade ou categoria.'), findsOneWidget);
     expect(find.text('Limpar filtro'), findsOneWidget);
   });
 
@@ -109,6 +127,9 @@ void main() {
     expect(find.text('Consertar portão'), findsNothing);
   });
 }
+
+ChoiceChip _chip(WidgetTester tester, String chave) =>
+    tester.widget<ChoiceChip>(find.byKey(Key(chave)));
 
 const _prestador = Conta(
   uid: 'prestador-1',

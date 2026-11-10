@@ -25,12 +25,21 @@ void main() {
     await tester.tap(find.text('Criar conta'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Informe seu e-mail.'), findsOneWidget);
-    expect(find.text('Informe sua senha.'), findsOneWidget);
-    expect(find.text('Informe seu nome.'), findsOneWidget);
-    expect(find.text('Informe sua cidade.'), findsOneWidget);
-    expect(find.text('Informe seu bairro.'), findsOneWidget);
     expect(find.text('Escolha um perfil.'), findsOneWidget);
+    for (final mensagem in [
+      'Informe seu bairro.',
+      'Informe sua cidade.',
+      'Informe seu nome.',
+      'Informe sua senha.',
+      'Informe seu e-mail.',
+    ]) {
+      await tester.dragUntilVisible(
+        find.text(mensagem),
+        find.byType(ListView),
+        const Offset(0, 200),
+      );
+      expect(find.text(mensagem), findsOneWidget);
+    }
   });
 
   testWidgets('entrada vazia mostra erros junto aos campos', (tester) async {
@@ -83,7 +92,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Perfil ativo: Contratante'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('selo-perfil')),
+        matching: find.text('Contratante'),
+      ),
+      findsOneWidget,
+    );
     expect(
       find.text('Publique e gerencie seus próprios pedidos.'),
       findsOneWidget,
@@ -103,7 +118,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Perfil ativo: Contratante'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('selo-perfil')),
+          matching: find.text('Contratante'),
+        ),
+        findsOneWidget,
+      );
       expect(
         find.text('Publique e gerencie seus próprios pedidos.'),
         findsOneWidget,
