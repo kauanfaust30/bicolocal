@@ -65,8 +65,10 @@ no envio e confirmar que o cadastro não termina.
 4. **Given** uma conta existente sem foto, **When** a pessoa entra no aplicativo, **Then** ela é
    levada a adicionar uma foto antes de usar as demais telas.
 5. **Given** uma pessoa com foto, **When** ela troca a foto no próprio perfil e confirma a prévia,
-   **Then** a nova foto passa a aparecer no próprio perfil e nos pedidos aceitos depois da troca;
-   os pedidos já aceitos antes da troca continuam mostrando a foto anterior.
+   **Then** a nova foto passa a aparecer no próprio perfil e nas candidaturas enviadas depois da
+   troca; as candidaturas já enviadas, e os pedidos aceitos a partir delas, continuam mostrando a
+   foto do momento da candidatura; para o contratante, a nova foto vale para os pedidos aceitos
+   depois da troca, e os pedidos já aceitos continuam mostrando a foto do momento do aceite.
 6. **Given** que um prestador se candidatou, **When** o contratante abre as candidaturas do pedido,
    **Then** vê o nome de cada prestador candidato com a inicial do nome no lugar da foto; depois de
    aceitar uma candidatura, passa a ver a foto do prestador escolhido.
@@ -177,6 +179,8 @@ ausência de bairro e e-mail.
 - Um pedido concluído não pode ser editado, cancelado, reaberto nem receber candidaturas.
 - A nota média não é exibida enquanto não houver avaliações; com avaliações, é exibida com uma casa
   decimal.
+- Candidaturas feitas antes desta funcionalidade não têm foto; se forem aceitas, a outra parte vê a
+  inicial do nome no lugar da foto.
 
 ## Requirements *(mandatory)*
 
@@ -238,7 +242,11 @@ ausência de bairro e e-mail.
 - **FR-018**: Uma pessoa com conta existente e sem foto MUST ser levada a adicionar uma foto ao
   entrar, antes de acessar as demais telas.
 - **FR-019**: A pessoa MUST poder trocar a própria foto no perfil, com prévia antes de confirmar;
-  se a troca falhar, a foto anterior MUST continuar valendo.
+  se a troca falhar, a foto anterior MUST continuar valendo. A nova foto MUST aparecer no próprio
+  perfil e nas candidaturas enviadas depois da troca; as candidaturas já enviadas, e os pedidos
+  aceitos a partir delas, MUST continuar mostrando a foto do momento da candidatura. Para o
+  contratante, a nova foto vale para os pedidos aceitos depois da troca; pedidos já aceitos
+  continuam mostrando a foto do momento do aceite.
 - **FR-020**: A foto de uma pessoa MUST aparecer para ela mesma no próprio perfil. Para outra
   pessoa, a foto MUST aparecer somente quando as duas são o contratante e o prestador escolhido de um
   mesmo pedido em andamento ou concluído, no perfil, na candidatura aceita e no pedido (FR-013 e
