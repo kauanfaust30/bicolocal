@@ -8,7 +8,9 @@ o contrato que `firestore.rules` deve cumprir; a redação final das regras sai 
 
 - Nada é liberado por padrão; `match /{document=**}` continua negando tudo.
 - `allow get` e `allow list` ficam separados em `requests` e nas coleções novas.
-- Toda garantia da spec que envolve permissão também é imposta aqui, não só no app.
+- Toda garantia da spec que envolve permissão também é imposta aqui, não só no app. Em especial:
+  visibilidade da foto (FR-020, FR-026) e reputação só alterável junto com uma avaliação válida
+  (FR-027).
 
 ## Funções auxiliares novas
 
@@ -42,7 +44,9 @@ function aceito(r)           = r.estado in ['em_andamento', 'concluido']
 | update (dados) | dono, alterando só `nome`, `cidade`, iguais a `getAfter(users/{uid})` |
 | delete | negado |
 
-`perfil` nunca muda (nenhum ramo de update o inclui).
+`perfil` nunca muda (nenhum ramo de update o inclui). `totalAvaliacoes`, `somaNotas` e
+`notaMedia` só aparecem no ramo "avaliação", que exige a criação de uma avaliação válida na mesma
+operação (FR-027).
 
 ## `profiles/{avaliadoUid}/avaliacoes/{requestId}`
 
@@ -94,7 +98,8 @@ Mesmo padrão de `applications/{providerUid}/private/contact`.
 | create | `request.auth.uid == providerUid`; chaves só `imagem`, `copiadaEm`; `imagem == get(privateFotoPath(providerUid)).imagem`; `copiadaEm == request.time`; `getAfter(applications/{providerUid}).estado == 'pendente'` |
 | update, delete | negado |
 
-Candidato recusado: `r.prestadorEscolhidoUid != providerUid`, então o contratante nunca lê a foto.
+Candidato recusado: `r.prestadorEscolhidoUid != providerUid`, então o contratante nunca lê a foto
+(FR-028). Pedido cancelado: `aceito(r)` é falso, então a leitura é recusada (FR-020).
 
 ## `requests/{requestId}/fotos/{contratanteUid}` (novo)
 
@@ -104,6 +109,9 @@ Candidato recusado: `r.prestadorEscolhidoUid != providerUid`, então o contratan
 | list | negado |
 | create | `isContractor(contratanteUid)`; chaves só `imagem`, `copiadaEm`; `imagem == get(privateFotoPath(contratanteUid)).imagem`; `copiadaEm == request.time`; `getAfter(requests/{requestId}).estado == 'em_andamento'` |
 | update, delete | negado |
+
+Pedido cancelado: `aceito(r)` é falso, então a leitura é recusada (FR-020). Remoção das duas cópias
+só pelo processo de retenção da 001, nunca por clientes (FR-028).
 
 ## Testes
 

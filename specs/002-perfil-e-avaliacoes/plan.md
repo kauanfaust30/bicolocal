@@ -174,7 +174,8 @@ listagem de avaliações. A conclusão do pedido é uma transição de estado de
 4. **História 3 – Perfil (P3)**: Meu perfil, Perfil de outra pessoa (a partir das candidaturas e
    do pedido), avaliações recentes com estados; regras de leitura.
 5. **Fechamento**: deploy de regras (com confirmação), quickstart manual, `flutter analyze` e
-   `flutter test`.
+   `flutter test`. Registrar que o processo de retenção de pedidos encerrados da 001, que ainda não
+   tem mecanismo implementado, deve apagar também as subcoleções de cópias de foto (FR-028).
 
 ## Complexity Tracking
 

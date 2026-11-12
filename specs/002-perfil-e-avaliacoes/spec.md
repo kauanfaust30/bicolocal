@@ -211,9 +211,12 @@ ausência de bairro e e-mail.
 
 **Perfil**
 
-- **FR-009**: Cada pessoa MUST ter um perfil que mostra foto, nome, cidade, tipo de perfil
-  (contratante ou prestador), nota média e total de avaliações recebidas, e as avaliações mais
-  recentes com nota, comentário (quando houver), nome de quem avaliou e data.
+- **FR-009**: Cada pessoa MUST ter um perfil que mostra foto, conforme o FR-020, nome, cidade, tipo
+  de perfil (contratante ou prestador), nota média e total de avaliações recebidas, e as avaliações
+  mais recentes com nota, comentário (quando houver), nome de quem avaliou e data. O nome exibido em
+  cada avaliação MUST ser o de quem avaliou no momento em que a avaliação foi feita. A nota média
+  MUST ser calculada como soma das notas ÷ total de avaliações, arredondada para uma casa decimal
+  (meio para cima, ex.: 4,65 → 4,7) e exibida com vírgula.
 - **FR-010**: O perfil MUST NOT mostrar bairro, e-mail ou telefone, para ninguém, incluindo a
   própria pessoa na visão pública.
 - **FR-011**: Um perfil sem avaliações recebidas MUST mostrar "Ainda sem avaliações".
@@ -251,7 +254,8 @@ ausência de bairro e e-mail.
   pessoa, a foto MUST aparecer somente quando as duas são o contratante e o prestador escolhido de um
   mesmo pedido em andamento ou concluído, no perfil, na candidatura aceita e no pedido (FR-013 e
   FR-014). Em todos os outros casos, e enquanto a foto não tiver sido enviada, o sistema MUST
-  mostrar a inicial do nome no lugar dela.
+  mostrar a inicial do nome no lugar dela. Se um pedido em andamento for cancelado, a foto da outra
+  parte MUST deixar de ser visível naquele pedido e a inicial do nome MUST voltar a ser exibida.
 - **FR-021**: O sistema MUST aceitar somente arquivos de imagem e MUST recusar arquivos acima de um
   tamanho máximo, orientando a pessoa a escolher outra foto.
 - **FR-022**: Se o acesso à câmera ou à galeria for negado, o sistema MUST explicar como permitir o
@@ -264,6 +268,18 @@ ausência de bairro e e-mail.
   e a foto MUST ter rótulo acessível com o nome da pessoa.
 - **FR-025**: As listas desta funcionalidade (avaliações recentes, candidaturas) MUST
   apresentar estados distintos de carregamento, vazio e falha, com nova tentativa na falha.
+
+**Garantias nas regras de acesso aos dados e retenção**
+
+- **FR-026**: As restrições de visibilidade da foto (FR-020) MUST ser impostas também nas regras de
+  acesso aos dados, e não só na interface: uma leitura da foto fora dos casos do FR-020 MUST ser
+  recusada.
+- **FR-027**: A nota média, a soma das notas e o total de avaliações de uma pessoa MUST mudar somente
+  junto com a criação de uma avaliação válida (FR-003 a FR-005), na mesma operação; qualquer outra
+  alteração desses valores MUST ser recusada pelas regras de acesso aos dados.
+- **FR-028**: As cópias da foto guardadas em um pedido MUST permanecer enquanto o pedido existir e
+  MUST ser removidas junto com ele, conforme a retenção de pedidos encerrados da 001 (FR-025). As
+  cópias de candidatos não escolhidos MUST NOT ser lidas por ninguém além do próprio dono.
 
 ### Key Entities
 
