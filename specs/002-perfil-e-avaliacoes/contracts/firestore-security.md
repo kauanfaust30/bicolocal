@@ -65,7 +65,9 @@ operação (FR-027).
 - `avaliadorUid == request.auth.uid`;
 - `avaliadorNome == get(profiles/{request.auth.uid}).nome`;
 - `nota is int && nota >= 1 && nota <= 5`;
-- `comentario is string && comentario.size() <= 300`;
+- `comentario is string && comentario.size() <= 1200` — teto de segurança; o limite de 300
+  caracteres visíveis (FR-004) é aplicado pelo app, que conta com o pacote `characters` do Flutter.
+  A regra não conta caracteres visíveis, e um emoji composto vale vários em `size()`;
 - `criadaEm == request.time`;
 - `getAfter(profiles/{avaliadoUid}).ultimaAvaliacaoId == requestId` e
   `getAfter(profiles/{avaliadoUid}).totalAvaliacoes == get(profiles/{avaliadoUid}).totalAvaliacoes + 1`
@@ -98,7 +100,7 @@ Mesmo padrão de `applications/{providerUid}/private/contact`.
 | create | `request.auth.uid == providerUid`; chaves só `imagem`, `copiadaEm`; `imagem == get(privateFotoPath(providerUid)).imagem`; `copiadaEm == request.time`; `getAfter(applications/{providerUid}).estado == 'pendente'` |
 | update, delete | negado |
 
-Candidato recusado: `r.prestadorEscolhidoUid != providerUid`, então o contratante nunca lê a foto
+Candidato não escolhido: `r.prestadorEscolhidoUid != providerUid`, então o contratante nunca lê a foto
 (FR-028). Pedido cancelado: `aceito(r)` é falso, então a leitura é recusada (FR-020).
 
 ## `requests/{requestId}/fotos/{contratanteUid}` (novo)

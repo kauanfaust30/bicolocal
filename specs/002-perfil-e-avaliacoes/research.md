@@ -56,8 +56,8 @@ Decisões técnicas da 002. Não restam itens NEEDS CLARIFICATION.
     `users/{uid}/private/foto` (conferido pela regra).
 - **Rationale**: Funciona só com regras. As duas fotos ficam disponíveis no momento do aceite, sem
   depender de o prestador abrir o app. A cópia do candidato fica guardada no pedido, mas a regra de
-  leitura nunca a libera ao contratante se ele não for o escolhido: **candidatos recusados nunca
-  têm a foto lida**.
+  leitura nunca a libera ao contratante se ele não for o escolhido: **candidatos não escolhidos
+  nunca têm a foto lida**.
 - **Consequências**:
   - A foto do prestador num pedido é a que ele tinha **ao se candidatar**. Se trocar a foto entre a
     candidatura e o aceite, o pedido aceito mostra a anterior, como determinam o cenário 5 da

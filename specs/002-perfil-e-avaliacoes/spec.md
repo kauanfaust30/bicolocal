@@ -23,6 +23,8 @@
   prestador fica oculta até o contratante aceitar a candidatura; a partir daí, só o contratante
   daquele pedido vê a foto do prestador escolhido. A foto das duas partes só é revelada entre elas,
   depois do aceite.
+- A regra (9) da descrição original ("a foto aparece ... na lista de candidaturas e no pedido") foi
+  substituída pelo FR-020.
 
 ## Relação com a funcionalidade 001
 
@@ -154,8 +156,11 @@ ausência de bairro e e-mail.
    contratante a partir dele, **Then** vê também a foto do contratante; os demais prestadores
    continuam sem vê-la.
 9. **Given** que o contratante aceitou a candidatura de um prestador, **When** abre o pedido ou o
-   perfil do prestador escolhido, **Then** vê também a foto dele; a foto dos candidatos recusados
+   perfil do prestador escolhido, **Then** vê também a foto dele; a foto dos candidatos não escolhidos
    continua oculta.
+10. **Given** um pedido em andamento ou concluído, **When** um prestador ou contratante sem vínculo
+   com esse pedido vê o contratante ou o prestador escolhido dele, **Then** vê só a inicial do nome
+   no lugar da foto.
 
 ---
 
@@ -200,25 +205,29 @@ ausência de bairro e e-mail.
   escolhido e o prestador escolhido avalie o contratante, uma única vez por pedido cada um.
 - **FR-004**: Cada avaliação MUST ter nota inteira de 1 a 5 e MAY ter comentário de até 300
   caracteres. O sistema MUST rejeitar nota ausente ou fora do intervalo e comentário acima do
-  limite, indicando o campo e como corrigir.
+  limite, indicando o campo e como corrigir. O limite de 300 caracteres conta cada caractere visível
+  como um, incluindo letras acentuadas e emojis. Espaços no início e no fim são descartados;
+  comentário só com espaços é tratado como vazio.
 - **FR-005**: O sistema MUST recusar avaliações de quem não é parte do pedido, avaliações de pedidos
   não concluídos e uma segunda avaliação da mesma parte no mesmo pedido, também nas regras de
   acesso aos dados.
 - **FR-006**: Uma avaliação registrada MUST NOT ser editada nem apagada por ninguém.
 - **FR-007**: Depois que uma parte avalia, o pedido MUST mostrar a ela "Você já avaliou" e MUST
   deixar de oferecer o botão de avaliar; a outra parte continua com o botão enquanto não avaliar.
-- **FR-008**: O sistema MUST registrar a data da avaliação e MUST exibi-la no formato dd/MM/aaaa.
+- **FR-008**: O sistema MUST registrar a data da avaliação e MUST exibi-la no formato dd/MM/aaaa,
+  considerando o fuso `America/Sao_Paulo`.
 
 **Perfil**
 
 - **FR-009**: Cada pessoa MUST ter um perfil que mostra foto, conforme o FR-020, nome, cidade, tipo
-  de perfil (contratante ou prestador), nota média e total de avaliações recebidas, e as avaliações
-  mais recentes com nota, comentário (quando houver), nome de quem avaliou e data. O nome exibido em
+  de perfil (contratante ou prestador), nota média e total de avaliações recebidas, e as 5
+  avaliações recebidas mais recentes, da mais nova para a mais antiga (não há tela com todas as
+  avaliações nesta funcionalidade), com nota, comentário (quando houver), nome de quem avaliou e data. O nome exibido em
   cada avaliação MUST ser o de quem avaliou no momento em que a avaliação foi feita. A nota média
   MUST ser calculada como soma das notas ÷ total de avaliações, arredondada para uma casa decimal
   (meio para cima, ex.: 4,65 → 4,7) e exibida com vírgula.
-- **FR-010**: O perfil MUST NOT mostrar bairro, e-mail ou telefone, para ninguém, incluindo a
-  própria pessoa na visão pública.
+- **FR-010**: O perfil MUST NOT mostrar bairro, e-mail ou telefone, para ninguém, nem para a
+  própria pessoa.
 - **FR-011**: Um perfil sem avaliações recebidas MUST mostrar "Ainda sem avaliações".
 - **FR-012**: A pessoa MUST poder abrir o próprio perfil pelo início do aplicativo.
 - **FR-013**: O contratante MUST poder abrir o perfil de cada prestador candidato a partir das
@@ -243,7 +252,8 @@ ausência de bairro e e-mail.
 - **FR-017**: Se o envio da foto falhar, o cadastro MUST NOT ser concluído, os dados preenchidos
   MUST ser mantidos e a mensagem MUST explicar que a foto não foi enviada e como tentar de novo.
 - **FR-018**: Uma pessoa com conta existente e sem foto MUST ser levada a adicionar uma foto ao
-  entrar, antes de acessar as demais telas.
+  entrar, antes de acessar as demais telas. Se o envio falhar, a pessoa continua na tela, vê o motivo
+  e pode tentar de novo.
 - **FR-019**: A pessoa MUST poder trocar a própria foto no perfil, com prévia antes de confirmar;
   se a troca falhar, a foto anterior MUST continuar valendo. A nova foto MUST aparecer no próprio
   perfil e nas candidaturas enviadas depois da troca; as candidaturas já enviadas, e os pedidos
@@ -265,7 +275,8 @@ ausência de bairro e e-mail.
 
 - **FR-024**: Todas as mensagens desta funcionalidade MUST estar em português, explicar o problema
   e indicar como continuar. As telas MUST seguir os requisitos de acessibilidade da 001 (FR-028),
-  e a foto MUST ter rótulo acessível com o nome da pessoa.
+  e a foto MUST ter rótulo acessível com o nome da pessoa; a inicial que substitui a foto MUST ter
+  rótulo acessível "Inicial de {nome}".
 - **FR-025**: As listas desta funcionalidade (avaliações recentes, candidaturas) MUST
   apresentar estados distintos de carregamento, vazio e falha, com nova tentativa na falha.
 
@@ -315,17 +326,20 @@ ausência de bairro e e-mail.
 
 ## Assumptions
 
-- O perfil mostra as 5 avaliações recebidas mais recentes, da mais nova para a mais antiga.
 - A nota média é exibida com uma casa decimal (ex.: 4,7) e considera todas as avaliações recebidas.
 - Não há prazo para avaliar depois da conclusão; a avaliação fica disponível enquanto o pedido
   existir.
-- Cada avaliação fica visível no perfil de quem a recebeu assim que é registrada, sem esperar a
-  avaliação da outra parte.
 - O aplicativo não coleta telefone; a regra de não exibi-lo vale caso esse dado venha a existir.
 - Não há moderação de fotos ou comentários nesta funcionalidade.
+- O aplicativo não verifica se a foto mostra o rosto da pessoa.
+- A exclusão de conta, inclusive da foto e de suas cópias, está fora do escopo desta funcionalidade.
+- O risco de retaliação por avaliações visíveis assim que registradas é aceito; não há moderação nem
+  espera pela avaliação da outra parte.
 - O tamanho máximo da foto e os formatos aceitos serão definidos no plano, seguindo o padrão de
   aplicativos móveis.
 - Pedidos concluídos seguem a regra de retenção de pedidos encerrados da 001 (FR-025); as
   avaliações são mantidas no perfil de quem as recebeu mesmo após o pedido ser eliminado.
 - Contratar outro pedido com a mesma pessoa gera uma nova avaliação independente.
-- A exclusão de conta está fora do escopo desta funcionalidade.
+- A remoção das cópias da foto junto com o pedido (FR-028) depende do processo de retenção de pedidos
+  encerrados da 001, que ainda não tem mecanismo implementado. Até que exista, as cópias permanecem
+  armazenadas, mas continuam ilegíveis fora dos casos do FR-020.

@@ -24,7 +24,7 @@ foto na primeira entrada.
 **Language/Version**: Dart 3.13 (null safety), Flutter estável
 
 **Primary Dependencies**: Provider, go_router, firebase_core, firebase_auth, cloud_firestore (já
-existentes); **nova**: `image_picker` (ver Dependências novas)
+existentes); **novas**: `image_picker` e `characters` declarado diretamente (ver Dependências novas)
 
 **Storage**: Cloud Firestore. Sem Firebase Storage e sem Cloud Functions.
 
@@ -56,15 +56,17 @@ A 002 tem precedência sobre a `specs/001-cadastro-e-pedidos/spec.md` nos três 
 | Cadastro | FR-001/FR-004: e-mail, senha, nome, cidade, bairro e perfil | Foto também obrigatória |
 
 Os demais requisitos da 001 continuam valendo. A spec da 001 não é editada; esta tabela é a
-referência em caso de conflito.
+referência em caso de conflito. Só o `data-model.md` da 001 recebe uma nota sobre a
+retenção das cópias de foto (T063).
 
 ## Dependências novas
 
 | Pacote | Finalidade | Por que não uma alternativa já disponível |
 |---|---|---|
 | `image_picker` | Tirar foto com a câmera ou escolher da galeria (FR-016), já reduzida e comprimida no aparelho via `maxWidth`, `maxHeight` e `imageQuality` | Flutter e Dart não acessam câmera nem galeria sem plugin nativo. O próprio `image_picker` redimensiona e comprime, por isso **nenhum pacote de redução de imagem é necessário** (research D3) |
+| `characters` | Contar caracteres visíveis no limite de 300 do comentário (FR-004): um emoji composto ou uma letra acentuada conta como um | Já faz parte do Flutter (dependência transitiva, mesma versão do `pubspec.lock`), então não traz código novo. `String.length` conta unidades UTF-16 e erraria emojis. Precisa ser declarado no `pubspec.yaml` porque importar `package:characters` direto sem isso gera o aviso `depend_on_referenced_packages` no `flutter analyze` (verificado em 2026-11-12). A camada `domain` continua sem importar o Flutter |
 
-A versão será fixada no `pubspec.yaml`, como as demais, no momento da instalação, que exige
+As versões serão fixadas no `pubspec.yaml`, como as demais (`characters` na versão já resolvida no `pubspec.lock`), no momento da instalação, que exige
 confirmação do usuário (AGENTS.md). iOS exige `NSCameraUsageDescription` e
 `NSPhotoLibraryUsageDescription` no `Info.plist`, em português.
 
@@ -76,14 +78,14 @@ confirmação do usuário (AGENTS.md). iOS exige `NSCameraUsageDescription` e
 |---|---|---|
 | I. Simplicidade e legibilidade | ✅ | Duas funcionalidades novas por pasta (`perfil`, `avaliacoes`) com `data`/`domain`/`presentation`; conclusão fica em `pedidos` |
 | II. Teste primeiro | ✅ | Cada tarefa começa com teste usando `FakePerfilRepository`, `FakeAvaliacaoRepository`, `FakeSeletorFoto` e os fakes atuais; testes estáticos das regras antes de editá-las |
-| III. Dependências justificadas | ✅ | Só `image_picker`, justificado acima; pacote de redução descartado |
+| III. Dependências justificadas | ✅ | `image_picker` e `characters` (já parte do Flutter), justificados acima; pacote de redução descartado |
 | IV. Comunicação clara em português | ✅ | Mensagens de erro de foto, permissão e avaliação definidas em [contracts/telas-e-rotas.md](contracts/telas-e-rotas.md); datas dd/MM/aaaa |
 | V. Privacidade e contato protegido | ✅ | `profiles` não contém foto, bairro nem e-mail; foto privada do dono; cópia só para as partes após o aceite; contatos da 001 inalterados |
 | Restrições (repositórios, estados de lista) | ✅ | Nenhum widget acessa o Firestore; avaliações recentes e candidaturas com estados de carregando, vazio e erro |
 | Fluxo (spec manda, `flutter test` e `flutter analyze`) | ✅ | Escopo limitado à spec 002; precedência sobre a 001 registrada acima |
 
 **Re-check pós-design**: sem violações. A foto do prestador é copiada na candidatura e só lida
-pelo contratante depois do aceite (research D4); candidatos recusados nunca têm a foto lida.
+pelo contratante depois do aceite (research D4); candidatos não escolhidos nunca têm a foto lida.
 A troca de foto vale para candidaturas enviadas depois dela (cenário 5 da História 1 e FR-019),
 coerente com a cópia feita na candidatura; a pendência de D4 está resolvida.
 

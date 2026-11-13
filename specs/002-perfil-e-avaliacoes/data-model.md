@@ -37,7 +37,7 @@ O id é o `requestId`: no máximo uma avaliação por parte por pedido. Só `cre
 | `avaliadorUid` | string | = `request.auth.uid`; contratante ou prestador escolhido do pedido |
 | `avaliadorNome` | string | = `profiles/{avaliadorUid}.nome` no momento da avaliação; não é atualizado depois (FR-009) |
 | `nota` | int | 1 a 5 |
-| `comentario` | string | 0 a 300 caracteres; vazio quando não informado |
+| `comentario` | string | 0 a 300 caracteres visíveis (app, FR-004); regra com teto de 1200; vazio quando não informado |
 | `criadaEm` | timestamp | = `request.time` |
 
 - **Pré-condições**: `requests/{requestId}.estado == 'concluido'`; avaliado é a outra parte.
@@ -68,7 +68,7 @@ Candidaturas anteriores à 002 não têm cópia; aceitas, mostram a inicial do n
   mesmo processo de retenção de pedidos encerrados da 001 (12 meses). Como o Firestore não apaga
   subcoleções junto com o documento, esse processo precisa apagar também `fotos/*` e
   `applications/*/private/foto`. Clientes nunca apagam cópias.
-- **Recusados (FR-028)**: a cópia de um candidato não escolhido só é legível pelo próprio dono.
+- **Não escolhidos (FR-028)**: a cópia de um candidato não escolhido só é legível pelo próprio dono.
 
 Campos das duas cópias:
 
@@ -82,7 +82,7 @@ Campos das duas cópias:
 - **Quando**: gravada pelo prestador ao se candidatar, na transação da candidatura (com a
   candidatura ainda `pendente`).
 - **Leitura**: o próprio prestador; o contratante do pedido só com o pedido em andamento ou
-  concluído e `prestadorEscolhidoUid == providerUid`. Candidatos recusados nunca têm a foto lida.
+  concluído e `prestadorEscolhidoUid == providerUid`. Candidatos não escolhidos nunca têm a foto lida.
 
 ### FotoDoContratante — `requests/{requestId}/fotos/{contratanteUid}`
 
