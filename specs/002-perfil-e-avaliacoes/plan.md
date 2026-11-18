@@ -160,7 +160,7 @@ listagem de avaliações. A conclusão do pedido é uma transição de estado de
 
 ## Fases de implementação (resumo para `$speckit-tasks`)
 
-1. **Base**: `image_picker` (após confirmação), `SeletorFoto` e fake, `AvatarPessoa`, entidades
+1. **Base**: `image_picker` (após confirmação) e declarar `characters`, `SeletorFoto` e fake, `AvatarPessoa`, entidades
    e fakes de perfil e avaliação.
 2. **História 1 – Foto (P1)**:
    - cadastro com foto em escrita atômica;

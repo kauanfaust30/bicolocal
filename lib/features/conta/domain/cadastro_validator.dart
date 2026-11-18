@@ -1,3 +1,4 @@
+import '../../perfil/domain/foto_perfil.dart';
 import 'perfil.dart';
 
 class CadastroValidator {
@@ -8,6 +9,7 @@ class CadastroValidator {
     required String cidade,
     required String bairro,
     required Perfil? perfil,
+    required FotoPerfil? foto,
   }) {
     final erros = <String, String>{};
     final emailLimpo = email.trim();
@@ -22,6 +24,9 @@ class CadastroValidator {
     if (cidade.trim().isEmpty) erros['cidade'] = 'Informe sua cidade.';
     if (bairro.trim().isEmpty) erros['bairro'] = 'Informe seu bairro.';
     if (perfil == null) erros['perfil'] = 'Escolha um perfil.';
+    if (foto == null) {
+      erros['foto'] = 'Adicione uma foto para concluir o cadastro.';
+    }
     return erros;
   }
 

@@ -127,6 +127,11 @@ class EstadoPedidoSelo extends StatelessWidget {
         cores.primaryContainer,
         cores.onPrimaryContainer,
       ),
+      EstadoPedido.concluido => (
+        'Concluído',
+        cores.tertiaryContainer,
+        cores.onTertiaryContainer,
+      ),
       EstadoPedido.cancelado => (
         'Cancelado',
         cores.errorContainer,

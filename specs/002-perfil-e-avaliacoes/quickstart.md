@@ -6,7 +6,8 @@ telas em [contracts/telas-e-rotas.md](contracts/telas-e-rotas.md).
 
 ## Pré-requisitos
 
-- Dependências instaladas, incluindo `image_picker` (instalação exige confirmação):
+- Dependências instaladas, incluindo `image_picker` e declarar `characters` (instalação exige
+  confirmação):
   `flutter pub get`.
 - Regras e índices publicados (exige confirmação):
   `firebase deploy --only firestore:rules,firestore:indexes --project bicolocal-35534`.

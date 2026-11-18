@@ -63,6 +63,51 @@ service cloud.firestore {
       return /databases/$(database)/documents/requests/$(requestId);
     }
 
+    // --- 002: perfil com foto e avaliações ---
+
+    function userPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function profilePath(uid) {
+      return /databases/$(database)/documents/profiles/$(uid);
+    }
+
+    function privateFotoPath(uid) {
+      return /databases/$(database)/documents/users/$(uid)/private/foto;
+    }
+
+    // Foto JPEG reduzida: de 1 a 204 800 bytes.
+    function fotoValida(data) {
+      return data.imagem is bytes
+        && data.imagem.size() > 0
+        && data.imagem.size() <= 204800;
+    }
+
+    function ehParte(r) {
+      return request.auth.uid == r.contratanteUid
+        || request.auth.uid == r.prestadorEscolhidoUid;
+    }
+
+    // Foto da outra parte só com o pedido aceito; cancelado volta à inicial.
+    function aceito(r) {
+      return r.estado in ['em_andamento', 'concluido'];
+    }
+
+    function avaliacaoPath(avaliadoUid, requestId) {
+      return /databases/$(database)/documents/profiles/$(avaliadoUid)/avaliacoes/$(requestId);
+    }
+
+    // Pedido concluído; contratante avalia o prestador escolhido e
+    // vice-versa (FR-003, FR-005).
+    function avaliaOutraParte(r, avaliadoUid) {
+      return r.estado == 'concluido'
+        && ((request.auth.uid == r.contratanteUid
+              && avaliadoUid == r.prestadorEscolhidoUid)
+          || (request.auth.uid == r.prestadorEscolhidoUid
+              && avaliadoUid == r.contratanteUid));
+    }
+
     match /users/{uid} {
       allow get: if signedIn() && request.auth.uid == uid;
       allow list: if false;
@@ -106,6 +151,83 @@ service cloud.firestore {
           && request.resource.data.email == request.auth.token.email;
         allow delete: if false;
       }
+
+      // Foto privada: só o dono lê e grava (FR-020, FR-026).
+      match /private/foto {
+        allow get: if signedIn() && request.auth.uid == uid;
+        allow list: if false;
+        allow create, update: if signedIn()
+          && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['imagem', 'atualizadaEm'])
+          && fotoValida(request.resource.data)
+          && request.resource.data.atualizadaEm == request.time;
+        allow delete: if false;
+      }
+    }
+
+    // Perfil público: nunca contém foto, bairro nem e-mail (FR-010, FR-015).
+    match /profiles/{uid} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly([
+          'nome', 'cidade', 'perfil', 'notaMedia', 'totalAvaliacoes',
+          'somaNotas', 'ultimaAvaliacaoId'
+        ])
+        && request.resource.data.keys().hasAll([
+          'nome', 'cidade', 'perfil', 'notaMedia', 'totalAvaliacoes',
+          'somaNotas', 'ultimaAvaliacaoId'
+        ])
+        && request.resource.data.nome == getAfter(userPath(uid)).data.nome
+        && request.resource.data.cidade == getAfter(userPath(uid)).data.cidade
+        && request.resource.data.perfil == getAfter(userPath(uid)).data.perfil
+        && request.resource.data.totalAvaliacoes == 0
+        && request.resource.data.somaNotas == 0
+        && request.resource.data.notaMedia == 0
+        && request.resource.data.ultimaAvaliacaoId == null;
+      // Reputação só muda junto com uma avaliação nova, na mesma operação
+      // (FR-027, research D6).
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'totalAvaliacoes', 'somaNotas', 'notaMedia', 'ultimaAvaliacaoId'
+        ])
+        && request.resource.data.ultimaAvaliacaoId is string
+        && !exists(avaliacaoPath(uid, request.resource.data.ultimaAvaliacaoId))
+        && existsAfter(avaliacaoPath(uid, request.resource.data.ultimaAvaliacaoId))
+        && getAfter(avaliacaoPath(uid, request.resource.data.ultimaAvaliacaoId)).data.avaliadorUid == request.auth.uid
+        && request.resource.data.totalAvaliacoes == resource.data.totalAvaliacoes + 1
+        && request.resource.data.somaNotas == resource.data.somaNotas
+          + getAfter(avaliacaoPath(uid, request.resource.data.ultimaAvaliacaoId)).data.nota
+        && math.abs(float(request.resource.data.notaMedia)
+          - float(request.resource.data.somaNotas) / float(request.resource.data.totalAvaliacoes)) < 0.001;
+      allow delete: if false;
+
+      // Avaliação recebida; o id é o requestId, então cada parte avalia uma
+      // vez por pedido (criar sobre existente é update, negado).
+      match /avaliacoes/{requestId} {
+        // `list` entra com a História 3 (T061).
+        allow get: if signedIn();
+        allow create: if signedIn()
+          && avaliaOutraParte(get(requestPath(requestId)).data, uid)
+          && request.resource.data.keys().hasOnly([
+            'avaliadorUid', 'avaliadorNome', 'nota', 'comentario', 'criadaEm'
+          ])
+          && request.resource.data.keys().hasAll([
+            'avaliadorUid', 'avaliadorNome', 'nota', 'comentario', 'criadaEm'
+          ])
+          && request.resource.data.avaliadorUid == request.auth.uid
+          && request.resource.data.avaliadorNome == get(profilePath(request.auth.uid)).data.nome
+          && request.resource.data.nota is int
+          && request.resource.data.nota >= 1
+          && request.resource.data.nota <= 5
+          && request.resource.data.comentario is string
+          && request.resource.data.comentario.size() <= 1200
+          && request.resource.data.criadaEm == request.time
+          && getAfter(profilePath(uid)).data.ultimaAvaliacaoId == requestId
+          && getAfter(profilePath(uid)).data.totalAvaliacoes == get(profilePath(uid)).data.totalAvaliacoes + 1;
+        allow update, delete: if false;
+      }
     }
 
     match /categories/{categoryId} {
@@ -114,19 +236,19 @@ service cloud.firestore {
     }
 
     match /requests/{requestId} {
-            allow get: if signedIn()
+      allow get: if signedIn()
         && ((resource.data.estado == 'aberto'
               && isProfile('prestador')
               && validForToday(resource.data))
           || resource.data.contratanteUid == request.auth.uid
-          || (resource.data.estado == 'em_andamento'
+          || (aceito(resource.data)
               && resource.data.prestadorEscolhidoUid == request.auth.uid));
 
       allow list: if signedIn()
         && ((resource.data.estado == 'aberto'
               && isProfile('prestador'))
           || resource.data.contratanteUid == request.auth.uid
-          || (resource.data.estado == 'em_andamento'
+          || (aceito(resource.data)
               && resource.data.prestadorEscolhidoUid == request.auth.uid));
 
       allow create: if isContractor(request.resource.data.contratanteUid)
@@ -190,6 +312,13 @@ service cloud.firestore {
             ])
             && request.resource.data.atualizadoEm == request.time
             && getAfter(/databases/$(database)/documents/requests/$(requestId)/applications/$(request.resource.data.prestadorEscolhidoUid)).data.estado == 'aceita')
+          // Concluir (FR-001): só o contratante, só de em andamento. Nenhum
+          // ramo aceita pedido já concluído (FR-002).
+          || (isContractor(resource.data.contratanteUid)
+            && resource.data.estado == 'em_andamento'
+            && request.resource.data.estado == 'concluido'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'atualizadoEm'])
+            && request.resource.data.atualizadoEm == request.time)
         );
       allow delete: if false;
 
@@ -235,6 +364,41 @@ service cloud.firestore {
             && getAfter(/databases/$(database)/documents/requests/$(requestId)/applications/$(providerUid)).data.estado == 'pendente';
           allow update, delete: if false;
         }
+
+        // Cópia da foto do prestador, gravada por ele ao se candidatar. O
+        // contratante só a lê se aceitar esta candidatura; a de candidatos
+        // não escolhidos nunca é lida por outra pessoa (FR-020, FR-028).
+        match /private/foto {
+          allow get: if signedIn()
+            && (request.auth.uid == providerUid
+              || (aceito(get(requestPath(requestId)).data)
+                && get(requestPath(requestId)).data.prestadorEscolhidoUid == providerUid
+                && get(requestPath(requestId)).data.contratanteUid == request.auth.uid));
+          allow list: if false;
+          allow create: if signedIn()
+            && request.auth.uid == providerUid
+            && request.resource.data.keys().hasOnly(['imagem', 'copiadaEm'])
+            && request.resource.data.imagem == get(privateFotoPath(providerUid)).data.imagem
+            && request.resource.data.copiadaEm == request.time
+            && getAfter(/databases/$(database)/documents/requests/$(requestId)/applications/$(providerUid)).data.estado == 'pendente';
+          allow update, delete: if false;
+        }
+      }
+
+      // Cópia da foto do contratante, gravada por ele no aceite. Só as partes
+      // leem, com o pedido em andamento ou concluído (FR-020, FR-026).
+      match /fotos/{contratanteUid} {
+        allow get: if signedIn()
+          && aceito(get(requestPath(requestId)).data)
+          && ehParte(get(requestPath(requestId)).data)
+          && contratanteUid == get(requestPath(requestId)).data.contratanteUid;
+        allow list: if false;
+        allow create: if isContractor(contratanteUid)
+          && request.resource.data.keys().hasOnly(['imagem', 'copiadaEm'])
+          && request.resource.data.imagem == get(privateFotoPath(contratanteUid)).data.imagem
+          && request.resource.data.copiadaEm == request.time
+          && getAfter(requestPath(requestId)).data.estado == 'em_andamento';
+        allow update, delete: if false;
       }
 
       match /privateContacts/{contractorUid} {

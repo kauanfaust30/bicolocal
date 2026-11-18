@@ -81,4 +81,10 @@ class _RepositorioPedidosFalso implements PedidoRepository {
     required String editorUid,
     required DateTime agoraUtc,
   }) async {}
+
+  @override
+  Future<void> concluir({
+    required String pedidoId,
+    required String editorUid,
+  }) async {}
 }

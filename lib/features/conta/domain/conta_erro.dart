@@ -1,4 +1,9 @@
-enum ContaErroTipo { emailEmUso, credenciaisInvalidas, indisponivel }
+enum ContaErroTipo {
+  emailEmUso,
+  credenciaisInvalidas,
+  indisponivel,
+  fotoNaoEnviada,
+}
 
 class ContaErro implements Exception {
   const ContaErro(this.tipo);
@@ -11,6 +16,9 @@ class ContaErro implements Exception {
   factory ContaErro.indisponivel() =>
       const ContaErro(ContaErroTipo.indisponivel);
 
+  factory ContaErro.fotoNaoEnviada() =>
+      const ContaErro(ContaErroTipo.fotoNaoEnviada);
+
   final ContaErroTipo tipo;
 
   String get mensagem => switch (tipo) {
@@ -20,6 +28,9 @@ class ContaErro implements Exception {
       'E-mail ou senha incorretos. Confira os dados e tente novamente.',
     ContaErroTipo.indisponivel =>
       'Não foi possível acessar sua conta. Tente novamente.',
+    ContaErroTipo.fotoNaoEnviada =>
+      'Não foi possível enviar sua foto. Seus dados continuam preenchidos. '
+          'Verifique a conexão e toque em Criar conta de novo.',
   };
 }
 

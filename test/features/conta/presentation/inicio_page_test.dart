@@ -14,6 +14,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: conta),
         pedidoRepository: FakePedidoRepository(),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/inicio',
       ),
     );

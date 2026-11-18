@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../conta/data/private_contact_repository.dart';
 import '../../pedidos/domain/data_civil.dart';
+import '../../perfil/domain/foto_perfil.dart';
 import '../domain/candidatura.dart';
 import '../domain/candidatura_error.dart';
 import '../domain/candidatura_repository.dart';
@@ -42,6 +43,7 @@ class FirestoreCandidaturaRepository implements CandidaturaRepository {
   Future<void> candidatar(
     Candidatura candidatura, {
     required String emailPrestador,
+    FotoPerfil? foto,
   }) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null || uid != candidatura.prestadorUid) {
@@ -76,6 +78,14 @@ class FirestoreCandidaturaRepository implements CandidaturaRepository {
         'atualizadaEm': FieldValue.serverTimestamp(),
       });
       transaction.set(contatoRef, {'email': emailPrestador});
+      // Cópia da foto do prestador: o contratante só consegue lê-la se
+      // aceitar esta candidatura (research D4, FR-028).
+      if (foto != null) {
+        transaction.set(
+          candidaturaRef.collection('private').doc('foto'),
+          _copiaFoto(foto),
+        );
+      }
     });
   }
 
@@ -85,6 +95,7 @@ class FirestoreCandidaturaRepository implements CandidaturaRepository {
     required String prestadorUid,
     required String emailContratante,
     required DateTime agoraUtc,
+    FotoPerfil? fotoContratante,
   }) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null || _auth.currentUser?.email != emailContratante) {
@@ -151,7 +162,45 @@ class FirestoreCandidaturaRepository implements CandidaturaRepository {
         'email': emailContratante,
         'contratanteUid': uid,
       });
+      if (fotoContratante != null) {
+        transaction.set(_fotos(pedidoId).doc(uid), _copiaFoto(fotoContratante));
+      }
     });
+  }
+
+  @override
+  Future<FotoPerfil?> carregarFotoDoPrestador({
+    required String pedidoId,
+    required String prestadorUid,
+  }) => _lerCopia(
+    _candidaturas(pedidoId).doc(prestadorUid).collection('private').doc('foto'),
+  );
+
+  @override
+  Future<FotoPerfil?> carregarFotoDoContratante({
+    required String pedidoId,
+    required String contratanteUid,
+  }) => _lerCopia(_fotos(pedidoId).doc(contratanteUid));
+
+  CollectionReference<Map<String, dynamic>> _fotos(String pedidoId) =>
+      _pedido(pedidoId).collection('fotos');
+
+  Map<String, Object?> _copiaFoto(FotoPerfil foto) => {
+    'imagem': Blob(foto.bytes),
+    'copiadaEm': FieldValue.serverTimestamp(),
+  };
+
+  /// Sem cópia (candidatura anterior à 002) ou sem permissão, devolve `null`
+  /// e a tela mostra a inicial do nome (FR-020).
+  Future<FotoPerfil?> _lerCopia(
+    DocumentReference<Map<String, dynamic>> referencia,
+  ) async {
+    try {
+      final imagem = (await referencia.get()).data()?['imagem'];
+      return imagem is Blob ? FotoPerfil(imagem.bytes) : null;
+    } on FirebaseException {
+      return null;
+    }
   }
 
   @override

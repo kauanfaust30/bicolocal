@@ -19,6 +19,9 @@ void main() {
             falhasCategoriasRestantes: 1,
           ),
           candidaturaRepository: FakeCandidaturaRepository(),
+          perfilRepository: FakePerfilRepository(),
+          avaliacaoRepository: FakeAvaliacaoRepository(),
+          seletorFoto: FakeSeletorFoto(),
           initialLocation: '/pedidos/novo',
         ),
       );
@@ -54,6 +57,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _contratante),
         pedidoRepository: FakePedidoRepository(),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos/novo',
       ),
     );
@@ -83,6 +89,9 @@ void main() {
           categorias: const [Categoria(id: 'reparos', nome: 'Reparos')],
         ),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos/novo',
       ),
     );

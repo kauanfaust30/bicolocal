@@ -8,6 +8,9 @@ import 'features/candidaturas/data/firestore_candidatura_repository.dart';
 import 'features/conta/data/private_contact_repository.dart';
 import 'features/conta/data/firebase_conta_repository.dart';
 import 'features/pedidos/data/firestore_pedido_repository.dart';
+import 'features/avaliacoes/data/firestore_avaliacao_repository.dart';
+import 'features/perfil/data/firestore_perfil_repository.dart';
+import 'features/perfil/data/image_picker_seletor_foto.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +28,14 @@ Future<void> main() async {
           FirebaseAuth.instance,
           PrivateContactRepository(FirebaseFirestore.instance),
         ),
+        perfilRepository: FirestorePerfilRepository(
+          FirebaseFirestore.instance,
+          FirebaseAuth.instance,
+        ),
+        avaliacaoRepository: FirestoreAvaliacaoRepository(
+          FirebaseFirestore.instance,
+        ),
+        seletorFoto: ImagePickerSeletorFoto(),
       ),
     );
   } catch (_) {

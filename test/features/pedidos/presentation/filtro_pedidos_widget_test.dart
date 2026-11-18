@@ -23,6 +23,9 @@ void main() {
           pedidos: [_reparo, _limpeza],
         ),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos',
       ),
     );
@@ -79,6 +82,9 @@ void main() {
           pedidos: [_reparo],
         ),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos',
       ),
     );
@@ -107,6 +113,9 @@ void main() {
           pedidos: [_reparo, _campinas],
         ),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos',
       ),
     );

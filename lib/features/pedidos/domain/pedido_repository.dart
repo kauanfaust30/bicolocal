@@ -27,4 +27,8 @@ abstract interface class PedidoRepository {
     required String editorUid,
     required DateTime agoraUtc,
   });
+
+  /// Passa o pedido de em andamento para concluído, alterando só `estado` e
+  /// `atualizadoEm` (FR-001).
+  Future<void> concluir({required String pedidoId, required String editorUid});
 }

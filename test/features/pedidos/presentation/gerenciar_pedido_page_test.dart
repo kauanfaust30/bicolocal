@@ -4,9 +4,11 @@ import 'package:bicolocal/features/candidaturas/domain/candidatura_repository.da
 import 'package:bicolocal/features/conta/domain/conta.dart';
 import 'package:bicolocal/features/conta/domain/perfil.dart';
 import 'package:bicolocal/features/pedidos/domain/pedido.dart';
+import 'package:bicolocal/features/perfil/domain/foto_perfil.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../support/builders/test_data.dart';
 import '../../../support/fakes/fake_repositories.dart';
 
 void main() {
@@ -19,6 +21,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _prestador),
         pedidoRepository: FakePedidoRepository(pedidos: [_pedido()]),
         candidaturaRepository: candidaturas,
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos',
       ),
     );
@@ -40,6 +45,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _contratante),
         pedidoRepository: FakePedidoRepository(pedidos: [_pedido()]),
         candidaturaRepository: candidaturas,
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/inicio',
       ),
     );
@@ -69,6 +77,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _contratante),
         pedidoRepository: FakePedidoRepository(pedidos: [_pedido()]),
         candidaturaRepository: _CandidaturaRepositoryFalso(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/inicio',
       ),
     );
@@ -96,6 +107,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _contratante),
         pedidoRepository: pedidos,
         candidaturaRepository: _CandidaturaRepositoryFalso(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/inicio',
       ),
     );
@@ -129,6 +143,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _contratante),
         pedidoRepository: pedidos,
         candidaturaRepository: _CandidaturaRepositoryFalso(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/inicio',
       ),
     );
@@ -149,6 +166,102 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Tente novamente'), findsOneWidget);
+  });
+
+  group('foto da outra parte (FR-020)', () {
+    Future<void> abrirGerenciar(
+      WidgetTester tester, {
+      required Conta conta,
+      required EstadoPedido estado,
+      bool comCopias = true,
+    }) async {
+      final candidaturas = FakeCandidaturaRepository();
+      if (comCopias) {
+        candidaturas
+          ..copiasFotoPrestador['pedido-1:prestador-1'] = criarFotoTeste(
+            marca: 1,
+          )
+          ..copiasFotoContratante['pedido-1'] = criarFotoTeste(marca: 2);
+      }
+      await tester.pumpWidget(
+        BicoLocalApp(
+          contaRepository: FakeContaRepository(contaInicial: conta),
+          pedidoRepository: FakePedidoRepository(
+            pedidos: [
+              _pedido().copyWith(
+                estado: estado,
+                prestadorEscolhidoUid: _prestador.uid,
+              ),
+            ],
+          ),
+          candidaturaRepository: candidaturas,
+          perfilRepository: FakePerfilRepository(
+            perfis: {
+              _contratante.uid: criarPerfilTeste(
+                uid: _contratante.uid,
+                nome: 'Ana Prado',
+              ),
+              _prestador.uid: criarPerfilTeste(
+                uid: _prestador.uid,
+                nome: 'Bruno Lima',
+              ),
+            },
+          ),
+          avaliacaoRepository: FakeAvaliacaoRepository(),
+          seletorFoto: FakeSeletorFoto(),
+          initialLocation: '/pedidos/pedido-1/gerenciar',
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('em andamento, o contratante vê a foto do prestador', (
+      tester,
+    ) async {
+      await abrirGerenciar(
+        tester,
+        conta: _contratante,
+        estado: EstadoPedido.emAndamento,
+      );
+
+      expect(find.bySemanticsLabel('Foto de Bruno Lima'), findsOneWidget);
+    });
+
+    testWidgets('em andamento, o prestador vê a foto do contratante', (
+      tester,
+    ) async {
+      await abrirGerenciar(
+        tester,
+        conta: _prestador,
+        estado: EstadoPedido.emAndamento,
+      );
+
+      expect(find.bySemanticsLabel('Foto de Ana Prado'), findsOneWidget);
+    });
+
+    testWidgets('pedido cancelado volta a mostrar a inicial', (tester) async {
+      await abrirGerenciar(
+        tester,
+        conta: _contratante,
+        estado: EstadoPedido.cancelado,
+      );
+
+      expect(find.bySemanticsLabel('Inicial de Bruno Lima'), findsOneWidget);
+      expect(find.bySemanticsLabel('Foto de Bruno Lima'), findsNothing);
+    });
+
+    testWidgets('candidatura anterior à 002, sem cópia, mostra a inicial', (
+      tester,
+    ) async {
+      await abrirGerenciar(
+        tester,
+        conta: _contratante,
+        estado: EstadoPedido.emAndamento,
+        comCopias: false,
+      );
+
+      expect(find.bySemanticsLabel('Inicial de Bruno Lima'), findsOneWidget);
+    });
   });
 }
 
@@ -176,6 +289,7 @@ class _CandidaturaRepositoryFalso implements CandidaturaRepository {
   Future<void> candidatar(
     Candidatura candidatura, {
     required String emailPrestador,
+    FotoPerfil? foto,
   }) async {
     enviadas += 1;
     itens.add(candidatura);
@@ -187,6 +301,7 @@ class _CandidaturaRepositoryFalso implements CandidaturaRepository {
     required String prestadorUid,
     required String emailContratante,
     required DateTime agoraUtc,
+    FotoPerfil? fotoContratante,
   }) async {
     prestadorAceito = prestadorUid;
   }
@@ -202,6 +317,18 @@ class _CandidaturaRepositoryFalso implements CandidaturaRepository {
     required String pedidoId,
     required String contratanteUid,
   }) async => _contratante.email;
+
+  @override
+  Future<FotoPerfil?> carregarFotoDoPrestador({
+    required String pedidoId,
+    required String prestadorUid,
+  }) async => null;
+
+  @override
+  Future<FotoPerfil?> carregarFotoDoContratante({
+    required String pedidoId,
+    required String contratanteUid,
+  }) async => null;
 }
 
 const _contratante = Conta(

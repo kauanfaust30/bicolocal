@@ -8,6 +8,10 @@ import '../features/candidaturas/domain/candidatura_repository.dart';
 import '../features/candidaturas/presentation/candidatura_controller.dart';
 import '../features/pedidos/domain/pedido_repository.dart';
 import '../features/pedidos/presentation/pedido_controller.dart';
+import '../features/avaliacoes/domain/avaliacao_repository.dart';
+import '../features/avaliacoes/presentation/avaliacao_controller.dart';
+import '../features/perfil/domain/perfil_repository.dart';
+import '../features/perfil/domain/seletor_foto.dart';
 import 'router.dart';
 import 'tema.dart';
 
@@ -17,12 +21,18 @@ class BicoLocalApp extends StatefulWidget {
     required this.contaRepository,
     required this.pedidoRepository,
     required this.candidaturaRepository,
+    required this.perfilRepository,
+    required this.avaliacaoRepository,
+    required this.seletorFoto,
     this.initialLocation = '/cadastro',
   });
 
   final ContaRepository contaRepository;
   final PedidoRepository pedidoRepository;
   final CandidaturaRepository candidaturaRepository;
+  final PerfilRepository perfilRepository;
+  final AvaliacaoRepository avaliacaoRepository;
+  final SeletorFoto seletorFoto;
   final String initialLocation;
 
   @override
@@ -33,6 +43,7 @@ class _BicoLocalAppState extends State<BicoLocalApp> {
   late final ContaController _contaController;
   late final PedidoController _pedidoController;
   late final CandidaturaController _candidaturaController;
+  late final AvaliacaoController _avaliacaoController;
   late final GoRouter _router;
 
   @override
@@ -42,7 +53,9 @@ class _BicoLocalAppState extends State<BicoLocalApp> {
     _pedidoController = PedidoController(widget.pedidoRepository);
     _candidaturaController = CandidaturaController(
       widget.candidaturaRepository,
+      widget.perfilRepository,
     );
+    _avaliacaoController = AvaliacaoController(widget.avaliacaoRepository);
     _router = criarRouter(
       initialLocation: widget.initialLocation,
       contaController: _contaController,
@@ -55,6 +68,7 @@ class _BicoLocalAppState extends State<BicoLocalApp> {
     _contaController.dispose();
     _pedidoController.dispose();
     _candidaturaController.dispose();
+    _avaliacaoController.dispose();
     super.dispose();
   }
 
@@ -64,6 +78,10 @@ class _BicoLocalAppState extends State<BicoLocalApp> {
       ChangeNotifierProvider.value(value: _contaController),
       ChangeNotifierProvider.value(value: _pedidoController),
       ChangeNotifierProvider.value(value: _candidaturaController),
+      ChangeNotifierProvider.value(value: _avaliacaoController),
+      Provider<PerfilRepository>.value(value: widget.perfilRepository),
+      Provider<AvaliacaoRepository>.value(value: widget.avaliacaoRepository),
+      Provider<SeletorFoto>.value(value: widget.seletorFoto),
     ],
     child: MaterialApp.router(
       title: 'BicoLocal',

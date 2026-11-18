@@ -31,6 +31,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: conta),
         pedidoRepository: FakePedidoRepository(pedidos: pedidos),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: caminho,
       ),
     );

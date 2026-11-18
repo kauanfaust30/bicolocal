@@ -18,6 +18,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _prestador),
         pedidoRepository: FakePedidoRepository(),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos',
       ),
     );
@@ -36,6 +39,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _prestador),
         pedidoRepository: FakePedidoRepository(),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos',
       ),
     );
@@ -53,6 +59,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _prestador),
         pedidoRepository: repositorio,
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos',
       ),
     );
@@ -73,6 +82,9 @@ void main() {
         contaRepository: FakeContaRepository(contaInicial: _prestador),
         pedidoRepository: FakePedidoRepository(pedidos: [_pedido]),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos',
       ),
     );
@@ -108,6 +120,9 @@ void main() {
           categorias: const [Categoria(id: 'reparos', nome: 'Reparos')],
         ),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: '/pedidos/novo',
       ),
     );

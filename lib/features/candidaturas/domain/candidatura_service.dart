@@ -2,6 +2,7 @@ import '../../conta/domain/conta.dart';
 import '../../conta/domain/perfil.dart';
 import '../../pedidos/domain/data_civil.dart';
 import '../../pedidos/domain/pedido.dart';
+import '../../perfil/domain/foto_perfil.dart';
 import 'candidatura.dart';
 import 'candidatura_error.dart';
 import 'candidatura_repository.dart';
@@ -17,6 +18,7 @@ class CandidaturaService {
     required Pedido pedido,
     required Conta prestador,
     required DateTime agoraUtc,
+    FotoPerfil? foto,
   }) async {
     if (prestador.perfil != Perfil.prestador ||
         !_pedidoDisponivel(pedido, agoraUtc)) {
@@ -37,6 +39,7 @@ class CandidaturaService {
         estado: EstadoCandidatura.pendente,
       ),
       emailPrestador: prestador.email,
+      foto: foto,
     );
   }
 
@@ -57,6 +60,7 @@ class CandidaturaService {
     required Candidatura candidatura,
     required Conta contratante,
     required DateTime agoraUtc,
+    FotoPerfil? fotoContratante,
   }) async {
     if (pedido.contratanteUid != contratante.uid ||
         candidatura.pedidoId != pedido.id ||
@@ -71,6 +75,7 @@ class CandidaturaService {
       prestadorUid: candidatura.prestadorUid,
       emailContratante: contratante.email,
       agoraUtc: agoraUtc,
+      fotoContratante: fotoContratante,
     );
   }
 

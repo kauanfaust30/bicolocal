@@ -3,6 +3,7 @@ import 'package:bicolocal/features/conta/domain/perfil.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../support/builders/test_data.dart';
 import '../../../support/fakes/fake_repositories.dart';
 
 void main() {
@@ -12,6 +13,9 @@ void main() {
         contaRepository: FakeContaRepository(),
         pedidoRepository: FakePedidoRepository(),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(foto: criarFotoTeste()),
         initialLocation: caminho,
       ),
     );
@@ -91,6 +95,16 @@ void main() {
       final campo = find.widgetWithText(TextFormField, rotulo);
       await tester.dragUntilVisible(campo, lista, const Offset(0, -150));
       await tester.enterText(campo, valor);
+    }
+    // A foto é obrigatória no cadastro (FR-016).
+    for (final botao in ['Escolher da galeria', 'Usar esta foto']) {
+      await tester.dragUntilVisible(
+        find.text(botao),
+        lista,
+        const Offset(0, -150),
+      );
+      await tester.tap(find.text(botao));
+      await tester.pumpAndSettle();
     }
     await tester.dragUntilVisible(
       find.text('Quero fazer bicos'),

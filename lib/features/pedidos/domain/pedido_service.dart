@@ -108,6 +108,16 @@ class PedidoService {
     );
   }
 
+  Future<void> concluir({
+    required Pedido pedido,
+    required String editorUid,
+  }) async {
+    if (!PedidoPermissions.podeConcluir(pedido: pedido, uid: editorUid)) {
+      throw const PedidoPermissaoErro();
+    }
+    await _repository.concluir(pedidoId: pedido.id, editorUid: editorUid);
+  }
+
   Map<String, String> _validarCampos(Pedido pedido) => {
     if (pedido.titulo.trim().isEmpty) 'titulo': 'Informe o título do pedido.',
     if (pedido.categoriaId.trim().isEmpty)

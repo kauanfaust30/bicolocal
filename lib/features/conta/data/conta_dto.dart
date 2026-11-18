@@ -10,6 +10,7 @@ class ContaDto {
     String uid,
     Map<String, dynamic> data, {
     required String email,
+    bool temFoto = true,
   }) {
     final perfil = PerfilLabel.fromValue(data['perfil'] as String?);
     if (perfil == null) throw const FormatException('Perfil inválido.');
@@ -20,8 +21,25 @@ class ContaDto {
       cidade: data['cidade'] as String? ?? '',
       bairro: data['bairro'] as String? ?? '',
       perfil: perfil,
+      temFoto: temFoto,
     );
   }
+
+  /// `profiles/{uid}` recém-criado: sem foto, bairro nem e-mail, com
+  /// reputação zerada (contracts/firestore-security.md).
+  static Map<String, Object?> perfilPublicoNovo({
+    required String nome,
+    required String cidade,
+    required String perfil,
+  }) => {
+    'nome': nome,
+    'cidade': cidade,
+    'perfil': perfil,
+    'notaMedia': 0,
+    'totalAvaliacoes': 0,
+    'somaNotas': 0,
+    'ultimaAvaliacaoId': null,
+  };
 
   static Map<String, Object?> toDocument(Conta conta) => {
     'nome': conta.nome,

@@ -58,16 +58,19 @@ class FirestorePedidoRepository implements PedidoRepository {
 
   @override
   Future<List<Pedido>> listarGerenciaveis({required String uid}) async {
+    // Prestador escolhido: em andamento e concluídos, numa consulta por
+    // estado para as regras validarem cada uma pela igualdade (FR-007).
     final consultas = await Future.wait([
       _firestore
           .collection('requests')
           .where('contratanteUid', isEqualTo: uid)
           .get(),
-      _firestore
-          .collection('requests')
-          .where('prestadorEscolhidoUid', isEqualTo: uid)
-          .where('estado', isEqualTo: 'em_andamento')
-          .get(),
+      for (final estado in ['em_andamento', 'concluido'])
+        _firestore
+            .collection('requests')
+            .where('prestadorEscolhidoUid', isEqualTo: uid)
+            .where('estado', isEqualTo: estado)
+            .get(),
     ]);
     final documentos = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
     for (final consulta in consultas) {
@@ -162,6 +165,28 @@ class FirestorePedidoRepository implements PedidoRepository {
       }
       transacao.update(referencia, {
         'estado': 'cancelado',
+        'atualizadoEm': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
+  @override
+  Future<void> concluir({
+    required String pedidoId,
+    required String editorUid,
+  }) async {
+    final referencia = _firestore.collection('requests').doc(pedidoId);
+    await _firestore.runTransaction((transacao) async {
+      final documento = await transacao.get(referencia);
+      final dados = documento.data();
+      if (dados == null) throw const PedidoPermissaoErro();
+      final pedido = PedidoDto.fromDocument(documento.id, dados);
+      if (!PedidoPermissions.podeConcluir(pedido: pedido, uid: editorUid)) {
+        throw const PedidoPermissaoErro();
+      }
+      // Só estado e atualizadoEm, como exige o ramo "concluir" das regras.
+      transacao.update(referencia, {
+        'estado': 'concluido',
         'atualizadoEm': FieldValue.serverTimestamp(),
       });
     });

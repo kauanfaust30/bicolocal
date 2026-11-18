@@ -85,6 +85,14 @@ class InicioPage extends StatelessWidget {
               destino: '/meus-pedidos',
               secundaria: true,
             ),
+            const SizedBox(height: 12),
+            const _OpcaoInicio(
+              icone: Icons.account_circle_outlined,
+              titulo: 'Meu perfil',
+              descricao: 'Veja sua foto e seus dados públicos.',
+              destino: '/perfil',
+              secundaria: true,
+            ),
             if (controller.erro != null) ...[
               const SizedBox(height: 12),
               Text(

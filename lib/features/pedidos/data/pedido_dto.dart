@@ -15,6 +15,7 @@ class PedidoDto {
   static Pedido fromDocument(String id, Map<String, dynamic> data) {
     final estado = switch (data['estado']) {
       'em_andamento' => EstadoPedido.emAndamento,
+      'concluido' => EstadoPedido.concluido,
       'cancelado' => EstadoPedido.cancelado,
       _ => EstadoPedido.aberto,
     };

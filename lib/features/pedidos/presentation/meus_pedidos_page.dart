@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../../../core/async/async_state.dart';
 import '../../../core/widgets/estado_ilustrado.dart';
+import '../../avaliacoes/presentation/avaliacao_controller.dart';
+import '../../conta/domain/conta.dart';
 import '../../conta/domain/perfil.dart';
 import '../../conta/presentation/conta_controller.dart';
 import '../domain/pedido.dart';
@@ -102,6 +104,19 @@ class _MeusPedidosPageState extends State<MeusPedidosPage> {
                       label: const Text('Ver candidaturas'),
                     ),
                   ),
+                if (PedidoPermissions.podeConcluir(
+                  pedido: pedido,
+                  uid: conta?.uid,
+                ))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          context.go('/pedidos/${pedido.id}/concluir'),
+                      icon: const Icon(Icons.task_alt),
+                      label: const Text('Concluir pedido'),
+                    ),
+                  ),
                 if (podeGerenciar)
                   ElevatedButton.icon(
                     onPressed: () =>
@@ -109,6 +124,12 @@ class _MeusPedidosPageState extends State<MeusPedidosPage> {
                     icon: const Icon(Icons.edit_outlined),
                     label: const Text('Gerenciar pedido'),
                   ),
+                if (conta != null &&
+                    PedidoPermissions.podeAvaliar(
+                      pedido: pedido,
+                      uid: conta.uid,
+                    ))
+                  _AcaoAvaliar(pedido: pedido, conta: conta),
               ],
             );
           },
@@ -116,4 +137,54 @@ class _MeusPedidosPageState extends State<MeusPedidosPage> {
       },
     ),
   );
+}
+
+/// "Avaliar" enquanto a pessoa não avaliou; depois, "Você já avaliou"
+/// (FR-007). A outra parte continua com o botão até avaliar.
+class _AcaoAvaliar extends StatefulWidget {
+  const _AcaoAvaliar({required this.pedido, required this.conta});
+
+  final Pedido pedido;
+  final Conta conta;
+
+  @override
+  State<_AcaoAvaliar> createState() => _AcaoAvaliarState();
+}
+
+class _AcaoAvaliarState extends State<_AcaoAvaliar> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AvaliacaoController>().verificar(
+          conta: widget.conta,
+          pedido: widget.pedido,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final jaAvaliou = context.watch<AvaliacaoController>().jaAvaliou(
+      conta: widget.conta,
+      pedido: widget.pedido,
+    );
+    if (jaAvaliou == null) return const SizedBox.shrink();
+    if (jaAvaliou) {
+      return const Row(
+        children: [
+          Icon(Icons.check_circle_outline),
+          SizedBox(width: 8),
+          Text('Você já avaliou'),
+        ],
+      );
+    }
+    return ElevatedButton.icon(
+      onPressed: () => context.go('/pedidos/${widget.pedido.id}/avaliar'),
+      icon: const Icon(Icons.star_outline),
+      label: const Text('Avaliar'),
+    );
+  }
 }

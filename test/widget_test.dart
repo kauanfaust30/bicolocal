@@ -10,6 +10,9 @@ void main() {
         contaRepository: FakeContaRepository(),
         pedidoRepository: FakePedidoRepository(),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
       ),
     );
 

@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/widgets/bicolocal_logo.dart';
+import '../../perfil/domain/foto_perfil.dart';
+import '../../perfil/presentation/escolher_foto.dart';
 import '../domain/perfil.dart';
 import 'conta_controller.dart';
 
@@ -20,6 +22,7 @@ class _CadastroPageState extends State<CadastroPage> {
   final _cidade = TextEditingController();
   final _bairro = TextEditingController();
   Perfil? _perfil;
+  FotoPerfil? _foto;
 
   @override
   void dispose() {
@@ -40,6 +43,7 @@ class _CadastroPageState extends State<CadastroPage> {
       cidade: _cidade.text,
       bairro: _bairro.text,
       perfil: _perfil,
+      foto: _foto,
     );
     if (mounted && controller.conta != null && controller.erro == null) {
       context.go('/inicio');
@@ -73,6 +77,36 @@ class _CadastroPageState extends State<CadastroPage> {
                 _campo('Cidade', _cidade, 'cidade', controller),
                 const SizedBox(height: 12),
                 _campo('Bairro', _bairro, 'bairro', controller),
+                const SizedBox(height: 24),
+                const _TituloSecao(
+                  icone: Icons.account_circle_outlined,
+                  titulo: 'Foto de perfil',
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'Sua foto só aparece para a outra pessoa depois que uma '
+                    'candidatura é aceita.',
+                  ),
+                ),
+                ValueListenableBuilder(
+                  valueListenable: _nome,
+                  builder: (context, valor, _) => EscolherFoto(
+                    nome: valor.text,
+                    fotoAtual: _foto,
+                    aoConfirmar: (foto) => setState(() => _foto = foto),
+                  ),
+                ),
+                if (controller.errosCampos['foto'] case final erro?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, left: 12),
+                    child: Text(
+                      erro,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 24),
                 const _TituloSecao(
                   icone: Icons.badge_outlined,

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/async/async_state.dart';
+import '../../../core/registro_falha.dart';
 import '../../conta/domain/conta.dart';
 import '../../conta/domain/perfil.dart';
 import '../domain/categoria.dart';
@@ -176,6 +177,28 @@ class PedidoController extends ChangeNotifier {
       notifyListeners();
     }
     return false;
+  }
+
+  /// Conclui o pedido (FR-001). Em qualquer falha devolve `false` e o pedido
+  /// continua como estava.
+  Future<bool> concluirPedido({
+    required Conta? editor,
+    required Pedido pedido,
+  }) async {
+    if (editor == null) return false;
+    publicando = true;
+    notifyListeners();
+    try {
+      await _service.concluir(pedido: pedido, editorUid: editor.uid);
+      await carregarGerenciaveis(editor);
+      return true;
+    } catch (falha) {
+      registrarFalha('Falha ao concluir pedido', falha);
+      return false;
+    } finally {
+      publicando = false;
+      notifyListeners();
+    }
   }
 
   Future<void> carregarCategorias() async {

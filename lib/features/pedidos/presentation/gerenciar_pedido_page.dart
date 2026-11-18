@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/widgets/avatar_pessoa.dart';
 import '../../candidaturas/presentation/candidatura_controller.dart';
 import '../../conta/domain/conta.dart';
 import '../../conta/presentation/conta_controller.dart';
@@ -83,6 +84,7 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
   DateTime? _dataDesejada;
   DateTime? _validadeAte;
   bool _contatoCarregado = false;
+  bool _outraParteCarregada = false;
 
   @override
   void initState() {
@@ -163,6 +165,19 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
           }
         });
       }
+      if (!_outraParteCarregada &&
+          conta != null &&
+          widget.pedido.prestadorEscolhidoUid != null) {
+        _outraParteCarregada = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            context.read<CandidaturaController>().carregarOutraParte(
+              pedido: widget.pedido,
+              visualizador: conta,
+            );
+          }
+        });
+      }
       final erros = controller.errosCampos;
       return Column(
         children: [
@@ -170,6 +185,12 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
               children: [
+                if (widget.pedido.prestadorEscolhidoUid != null)
+                  _OutraParte(
+                    rotulo: conta?.uid == widget.pedido.contratanteUid
+                        ? 'Prestador escolhido'
+                        : 'Contratante',
+                  ),
                 SecaoFormulario(
                   icone: Icons.assignment_outlined,
                   titulo: 'O que você precisa',
@@ -244,6 +265,19 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
                 ),
                 _contato(conta),
                 const SizedBox(height: 16),
+                if (PedidoPermissions.podeConcluir(
+                  pedido: widget.pedido,
+                  uid: conta?.uid,
+                ))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          context.go('/pedidos/${widget.pedido.id}/concluir'),
+                      icon: const Icon(Icons.task_alt),
+                      label: const Text('Concluir pedido'),
+                    ),
+                  ),
                 OutlinedButton.icon(
                   onPressed: controller.publicando ? null : _cancelar,
                   style: OutlinedButton.styleFrom(
@@ -395,5 +429,40 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
       texto.trim().replaceAll('.', '').replaceAll(',', '.'),
     );
     return valor == null ? 0 : (valor * 100).round();
+  }
+}
+
+/// Com quem a pessoa está tratando: nome e, depois do aceite, a foto da
+/// outra parte (FR-020). Pedido cancelado ou sem cópia mostra a inicial.
+class _OutraParte extends StatelessWidget {
+  const _OutraParte({required this.rotulo});
+
+  final String rotulo;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.watch<CandidaturaController>();
+    final nome = controller.nomeOutraParte ?? rotulo;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            AvatarPessoa(nome: nome, bytes: controller.fotoOutraParte?.bytes),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(rotulo, style: Theme.of(context).textTheme.labelLarge),
+                  Text(nome, style: Theme.of(context).textTheme.titleMedium),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

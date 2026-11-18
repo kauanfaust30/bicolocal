@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>O BicoLocal usa a câmera para você tirar a sua foto de perfil.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>O BicoLocal acessa a galeria para você escolher a sua foto de perfil.</string>
 </dict>
 </plist>

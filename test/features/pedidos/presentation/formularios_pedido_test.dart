@@ -28,6 +28,9 @@ void main() {
           pedidos: [pedido],
         ),
         candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
         initialLocation: caminho,
       ),
     );

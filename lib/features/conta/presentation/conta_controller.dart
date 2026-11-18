@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../domain/cadastro_validator.dart';
+import '../../../core/registro_falha.dart';
+import '../../perfil/domain/foto_erro.dart';
+import '../../perfil/domain/foto_perfil.dart';
 import '../domain/conta.dart';
 import '../domain/conta_erro.dart';
 import '../domain/conta_repository.dart';
@@ -44,19 +46,8 @@ class ContaController extends ChangeNotifier {
     required String cidade,
     required String bairro,
     required Perfil? perfil,
+    required FotoPerfil? foto,
   }) async {
-    if (perfil == null) {
-      errosCampos = CadastroValidator.validar(
-        email: email,
-        senha: senha,
-        nome: nome,
-        cidade: cidade,
-        bairro: bairro,
-        perfil: null,
-      );
-      notifyListeners();
-      return;
-    }
     await _executar(
       () => _service.cadastrar(
         email: email,
@@ -65,8 +56,33 @@ class ContaController extends ChangeNotifier {
         cidade: cidade,
         bairro: bairro,
         perfil: perfil,
+        foto: foto,
       ),
     );
+  }
+
+  bool enviandoFoto = false;
+  String? erroFoto;
+
+  /// Adicionar foto (FR-018). Em caso de falha, a pessoa continua na tela,
+  /// vê o motivo e pode tentar de novo.
+  Future<void> adicionarFoto(FotoPerfil foto) async {
+    enviandoFoto = true;
+    erroFoto = null;
+    notifyListeners();
+    try {
+      await _service.adicionarFoto(foto);
+      final conta = _conta;
+      if (conta != null) _conta = conta.copyWith(temFoto: true);
+    } on FotoErro catch (falha) {
+      erroFoto = falha.mensagem;
+    } catch (falha) {
+      registrarFalha('Falha inesperada ao adicionar foto', falha);
+      erroFoto = FotoErro.envioFalhou.mensagem;
+    } finally {
+      enviandoFoto = false;
+      notifyListeners();
+    }
   }
 
   Future<void> entrar({required String email, required String senha}) async {
@@ -101,7 +117,8 @@ class ContaController extends ChangeNotifier {
       errosCampos = falha.campos;
     } on ContaErro catch (falha) {
       erro = falha.mensagem;
-    } catch (_) {
+    } catch (falha) {
+      registrarFalha('Falha inesperada no cadastro ou na entrada', falha);
       erro = 'Não foi possível concluir agora. Confira os dados e tente novamente.';
     } finally {
       carregando = false;

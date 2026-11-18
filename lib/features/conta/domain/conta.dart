@@ -8,6 +8,7 @@ class Conta {
     required this.cidade,
     required this.bairro,
     required this.perfil,
+    this.temFoto = true,
   });
 
   final String uid;
@@ -17,12 +18,17 @@ class Conta {
   final String bairro;
   final Perfil perfil;
 
-  Conta copyWith({Perfil? perfil}) => Conta(
+  /// Falso quando faltam a foto privada ou o perfil público (contas da 001);
+  /// a pessoa é levada a Adicionar foto (FR-018).
+  final bool temFoto;
+
+  Conta copyWith({Perfil? perfil, bool? temFoto}) => Conta(
     uid: uid,
     email: email,
     nome: nome,
     cidade: cidade,
     bairro: bairro,
     perfil: perfil ?? this.perfil,
+    temFoto: temFoto ?? this.temFoto,
   );
 }

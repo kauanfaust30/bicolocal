@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/widgets/avatar_pessoa.dart';
 import '../../conta/presentation/conta_controller.dart';
 import '../../conta/domain/conta.dart';
 import '../../pedidos/domain/pedido.dart';
@@ -110,32 +111,50 @@ class _RevisarCandidaturasPageState extends State<RevisarCandidaturasPage> {
     Conta conta,
     Candidatura candidatura,
     CandidaturaController controller,
-  ) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Prestador interessado'),
-          if (candidatura.estado == EstadoCandidatura.pendente)
-            ElevatedButton(
-              onPressed: controller.executando
-                  ? null
-                  : () => controller.aceitar(
-                      pedido: pedido,
-                      candidatura: candidatura,
-                      contratante: conta,
-                    ),
-              child: const Text('Aceitar candidatura'),
-            )
-          else
-            Text(
-              candidatura.estado == EstadoCandidatura.aceita
-                  ? 'Aceita'
-                  : 'Recusada',
+  ) {
+    final nome =
+        controller.perfisCandidatos[candidatura.prestadorUid]?.nome ??
+        'Prestador interessado';
+    final aceita = candidatura.estado == EstadoCandidatura.aceita;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // A foto só aparece na candidatura aceita (FR-020).
+                AvatarPessoa(
+                  nome: nome,
+                  bytes: aceita ? controller.fotoEscolhido?.bytes : null,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    nome,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
             ),
-        ],
+            const SizedBox(height: 12),
+            if (candidatura.estado == EstadoCandidatura.pendente)
+              ElevatedButton(
+                onPressed: controller.executando
+                    ? null
+                    : () => controller.aceitar(
+                        pedido: pedido,
+                        candidatura: candidatura,
+                        contratante: conta,
+                      ),
+                child: const Text('Aceitar candidatura'),
+              )
+            else
+              Text(aceita ? 'Aceita' : 'Recusada'),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

@@ -1,3 +1,4 @@
+import '../../perfil/domain/foto_perfil.dart';
 import 'cadastro_validator.dart';
 import 'conta.dart';
 import 'conta_erro.dart';
@@ -15,8 +16,9 @@ class ContaService {
     required String nome,
     required String cidade,
     required String bairro,
-    required Perfil perfil,
-  }) {
+    required Perfil? perfil,
+    required FotoPerfil? foto,
+  }) async {
     final erros = CadastroValidator.validar(
       email: email,
       senha: senha,
@@ -24,6 +26,7 @@ class ContaService {
       cidade: cidade,
       bairro: bairro,
       perfil: perfil,
+      foto: foto,
     );
     if (erros.isNotEmpty) throw ContaValidacaoErro(erros);
 
@@ -33,9 +36,13 @@ class ContaService {
       nome: nome.trim(),
       cidade: cidade.trim(),
       bairro: bairro.trim(),
-      perfil: perfil,
+      perfil: perfil!,
+      foto: foto!,
     );
   }
+
+  Future<void> adicionarFoto(FotoPerfil foto) =>
+      _repository.adicionarFoto(foto);
 
   Future<Conta> entrar({required String email, required String senha}) {
     final erros = <String, String>{};

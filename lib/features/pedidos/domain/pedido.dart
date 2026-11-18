@@ -1,4 +1,4 @@
-enum EstadoPedido { aberto, emAndamento, cancelado }
+enum EstadoPedido { aberto, emAndamento, concluido, cancelado }
 
 class Pedido {
   const Pedido({
