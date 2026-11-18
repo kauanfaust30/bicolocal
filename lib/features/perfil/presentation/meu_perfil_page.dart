@@ -1,21 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/widgets/avatar_pessoa.dart';
+import '../../avaliacoes/domain/avaliacao_repository.dart';
+import '../../candidaturas/domain/candidatura_repository.dart';
 import '../../conta/presentation/conta_controller.dart';
 import '../domain/perfil_repository.dart';
 import 'escolher_foto.dart';
 import 'foto_propria_controller.dart';
+import 'perfil_controller.dart';
+import 'reputacao_perfil.dart';
 
-/// Meu perfil: nesta etapa, a própria foto e a troca de foto (História 1).
-/// Nome, reputação e avaliações recentes entram na História 3 (T058).
+/// Meu perfil: foto própria com "Trocar foto" (FR-019), nome, cidade, tipo,
+/// reputação e avaliações recentes (FR-009, FR-012). Sem bairro nem e-mail.
 class MeuPerfilPage extends StatelessWidget {
   const MeuPerfilPage({super.key});
 
   @override
-  Widget build(BuildContext context) => ChangeNotifierProvider(
-    create: (context) =>
-        FotoPropriaController(context.read<PerfilRepository>())..carregar(),
+  Widget build(BuildContext context) => MultiProvider(
+    providers: [
+      ChangeNotifierProvider(
+        create: (context) =>
+            FotoPropriaController(context.read<PerfilRepository>())..carregar(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) {
+          final controller = PerfilController(
+            context.read<PerfilRepository>(),
+            context.read<AvaliacaoRepository>(),
+            context.read<CandidaturaRepository>(),
+          );
+          final uid = context.read<ContaController>().conta?.uid;
+          if (uid != null) controller.carregar(uid);
+          return controller;
+        },
+      ),
+    ],
     child: Scaffold(
       appBar: AppBar(title: const Text('Meu perfil')),
       body: const SafeArea(child: _Conteudo()),
@@ -35,9 +54,10 @@ class _ConteudoState extends State<_Conteudo> {
 
   @override
   Widget build(BuildContext context) {
-    final nome = context.watch<ContaController>().conta?.nome ?? '';
+    final conta = context.watch<ContaController>().conta;
+    final nome = conta?.nome ?? '';
     final controller = context.watch<FotoPropriaController>();
-    if (controller.carregando) {
+    if (controller.carregando || conta == null) {
       return const Center(child: CircularProgressIndicator());
     }
     final cores = Theme.of(context).colorScheme;
@@ -57,18 +77,11 @@ class _ConteudoState extends State<_Conteudo> {
             },
           )
         else ...[
-          Center(
-            child: AvatarPessoa(
-              nome: nome,
-              bytes: controller.foto?.bytes,
-              tamanho: 112,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            nome,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge,
+          CabecalhoPerfil(
+            nome: nome,
+            cidade: conta.cidade,
+            perfil: conta.perfil,
+            foto: controller.foto?.bytes,
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
@@ -87,6 +100,8 @@ class _ConteudoState extends State<_Conteudo> {
             padding: const EdgeInsets.only(top: 12),
             child: Text(erro, style: TextStyle(color: cores.error)),
           ),
+        const SizedBox(height: 24),
+        const ReputacaoPerfil(),
       ],
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:bicolocal/features/avaliacoes/domain/avaliacao.dart';
 import 'package:bicolocal/features/conta/domain/conta.dart';
 import 'package:bicolocal/features/conta/domain/perfil.dart';
 import 'package:bicolocal/features/pedidos/domain/pedido.dart';
@@ -31,6 +32,24 @@ PerfilPublico criarPerfilTeste({
   perfil: perfil,
   somaNotas: somaNotas,
   totalAvaliacoes: totalAvaliacoes,
+);
+
+Avaliacao criarAvaliacaoTeste({
+  String pedidoId = 'pedido-teste',
+  String avaliadorUid = 'avaliador-teste',
+  String avaliadorNome = 'Quem Avaliou',
+  String avaliadoUid = 'conta-teste',
+  int nota = 5,
+  String comentario = '',
+  DateTime? criadaEm,
+}) => Avaliacao(
+  pedidoId: pedidoId,
+  avaliadorUid: avaliadorUid,
+  avaliadorNome: avaliadorNome,
+  avaliadoUid: avaliadoUid,
+  nota: nota,
+  comentario: comentario,
+  criadaEm: criadaEm ?? DateTime.utc(2026, 11, 10, 15),
 );
 
 Conta criarContaTeste({

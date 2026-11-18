@@ -14,6 +14,7 @@ import '../features/pedidos/presentation/meus_pedidos_page.dart';
 import '../features/pedidos/presentation/publicar_pedido_page.dart';
 import '../features/perfil/presentation/adicionar_foto_page.dart';
 import '../features/perfil/presentation/meu_perfil_page.dart';
+import '../features/perfil/presentation/perfil_pessoa_page.dart';
 
 GoRouter criarRouter({
   String initialLocation = '/cadastro',
@@ -53,6 +54,19 @@ GoRouter criarRouter({
     GoRoute(path: '/inicio', builder: (_, _) => const InicioPage()),
     GoRoute(path: '/foto', builder: (_, _) => const AdicionarFotoPage()),
     GoRoute(path: '/perfil', builder: (_, _) => const MeuPerfilPage()),
+    GoRoute(
+      path: '/perfis/:uid',
+      // O perfil de outra pessoa só é oferecido a partir de um pedido
+      // (FR-015).
+      redirect: (_, state) =>
+          (state.uri.queryParameters['pedido'] ?? '').isEmpty
+          ? '/inicio'
+          : null,
+      builder: (_, state) => PerfilPessoaPage(
+        uid: state.pathParameters['uid']!,
+        pedidoId: state.uri.queryParameters['pedido'] ?? '',
+      ),
+    ),
     GoRoute(path: '/pedidos', builder: (_, _) => const ListaPedidosPage()),
     GoRoute(path: '/meus-pedidos', builder: (_, _) => const MeusPedidosPage()),
     GoRoute(

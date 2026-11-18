@@ -145,19 +145,19 @@ e-mail.
 
 ### Testes (escrever primeiro e ver falhar)
 
-- [ ] T052 [P] [US3] Criar `test/features/perfil/presentation/meu_perfil_page_test.dart`: "4,7", "12 avaliações"/"1 avaliação", 5 avaliações recentes com nota, comentário, nome e data dd/MM/aaaa; "Ainda sem avaliações"; estados de carregando, vazio e erro com "Tentar novamente"; nenhum bairro nem e-mail; data no fuso `America/Sao_Paulo` (FR-008)
-- [ ] T053 [P] [US3] Criar `test/features/perfil/presentation/perfil_pessoa_page_test.dart`: contratante abre candidato pelas candidaturas e vê a inicial; após o aceite vê a foto; prestador vê o contratante pela lista com a inicial; sem `pedido` na rota vai para `/inicio`; nenhum bairro nem e-mail
-- [ ] T054 [P] [US3] Ampliar `test/features/pedidos/presentation/lista_pedidos_page_test.dart`: ação "Ver contratante" no cartão abre o perfil do contratante
-- [ ] T055 [P] [US3] Ampliar `test/firestore_rules_002_test.dart`: `profiles` get para autenticados e sem `allow list`; avaliações get e list para autenticados; `users/{uid}` continua só do dono
+- [X] T052 [P] [US3] Criar `test/features/perfil/presentation/meu_perfil_page_test.dart`: "4,7", "12 avaliações"/"1 avaliação", 5 avaliações recentes com nota, comentário, nome e data dd/MM/aaaa; "Ainda sem avaliações"; estados de carregando, vazio e erro com "Tentar novamente"; nenhum bairro nem e-mail; data no fuso `America/Sao_Paulo` (FR-008)
+- [X] T053 [P] [US3] Criar `test/features/perfil/presentation/perfil_pessoa_page_test.dart`: contratante abre candidato pelas candidaturas e vê a inicial; após o aceite vê a foto; prestador vê o contratante pela lista com a inicial; sem `pedido` na rota vai para `/inicio`; nenhum bairro nem e-mail
+- [X] T054 [P] [US3] Ampliar `test/features/pedidos/presentation/lista_pedidos_page_test.dart`: ação "Ver contratante" no cartão abre o perfil do contratante
+- [X] T055 [P] [US3] Ampliar `test/firestore_rules_002_test.dart`: `profiles` get para autenticados e sem `allow list`; avaliações get e list para autenticados; `users/{uid}` continua só do dono
 
 ### Implementação
 
-- [ ] T056 [US3] Implementar `carregarPerfil` e `listarRecentes` ("5 mais recentes, `orderBy('criadaEm', descending)`, `limit(5)`") em `lib/features/perfil/data/firestore_perfil_repository.dart` e `lib/features/avaliacoes/data/firestore_avaliacao_repository.dart`, e nos fakes
-- [ ] T057 [US3] Criar `PerfilController` em `lib/features/perfil/presentation/perfil_controller.dart`
-- [ ] T058 [US3] Completar `MeuPerfilPage` com nome, cidade, selo do tipo, média, total e avaliações recentes em `lib/features/perfil/presentation/meu_perfil_page.dart`
-- [ ] T059 [US3] Criar `PerfilPessoaPage` em `lib/features/perfil/presentation/perfil_pessoa_page.dart` e a rota `/perfis/:uid?pedido=:pedidoId` em `lib/core/router.dart`
-- [ ] T060 [US3] Pontos de entrada: toque no candidato em `revisar_candidaturas_page.dart`, "Ver contratante" em `lista_pedidos_page.dart` e avatar da outra parte em `gerenciar_pedido_page.dart`
-- [ ] T061 [US3] Em `firestore.rules`: `profiles/{uid}` get (sem list) e `avaliacoes` get/list
+- [X] T056 [US3] Implementar `carregarPerfil` e `listarRecentes` ("5 mais recentes, `orderBy('criadaEm', descending)`, `limit(5)`") em `lib/features/perfil/data/firestore_perfil_repository.dart` e `lib/features/avaliacoes/data/firestore_avaliacao_repository.dart`, e nos fakes
+- [X] T057 [US3] Criar `PerfilController` em `lib/features/perfil/presentation/perfil_controller.dart`
+- [X] T058 [US3] Completar `MeuPerfilPage` com nome, cidade, selo do tipo, média, total e avaliações recentes em `lib/features/perfil/presentation/meu_perfil_page.dart`
+- [X] T059 [US3] Criar `PerfilPessoaPage` em `lib/features/perfil/presentation/perfil_pessoa_page.dart` e a rota `/perfis/:uid?pedido=:pedidoId` em `lib/core/router.dart`
+- [X] T060 [US3] Pontos de entrada: toque no candidato em `revisar_candidaturas_page.dart`, "Ver contratante" em `lista_pedidos_page.dart` e avatar da outra parte em `gerenciar_pedido_page.dart`
+- [X] T061 [US3] Em `firestore.rules`: `profiles/{uid}` get (sem list) e `avaliacoes` get/list
 
 **Checkpoint**: as três histórias funcionam de forma independente
 

@@ -185,11 +185,18 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
               children: [
-                if (widget.pedido.prestadorEscolhidoUid != null)
+                if (PedidoPermissions.outraParte(
+                      pedido: widget.pedido,
+                      uid: conta?.uid,
+                    )
+                    case final outroUid?)
                   _OutraParte(
                     rotulo: conta?.uid == widget.pedido.contratanteUid
                         ? 'Prestador escolhido'
                         : 'Contratante',
+                    aoTocar: () => context.push(
+                      '/perfis/$outroUid?pedido=${widget.pedido.id}',
+                    ),
                   ),
                 SecaoFormulario(
                   icone: Icons.assignment_outlined,
@@ -435,9 +442,12 @@ class _FormularioPedidoState extends State<_FormularioPedido> {
 /// Com quem a pessoa está tratando: nome e, depois do aceite, a foto da
 /// outra parte (FR-020). Pedido cancelado ou sem cópia mostra a inicial.
 class _OutraParte extends StatelessWidget {
-  const _OutraParte({required this.rotulo});
+  const _OutraParte({required this.rotulo, required this.aoTocar});
 
   final String rotulo;
+
+  /// Abre o perfil da outra parte (FR-013, FR-014).
+  final VoidCallback aoTocar;
 
   @override
   Widget build(BuildContext context) {
@@ -445,22 +455,27 @@ class _OutraParte extends StatelessWidget {
     final nome = controller.nomeOutraParte ?? rotulo;
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            AvatarPessoa(nome: nome, bytes: controller.fotoOutraParte?.bytes),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(rotulo, style: Theme.of(context).textTheme.labelLarge),
-                  Text(nome, style: Theme.of(context).textTheme.titleMedium),
-                ],
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: aoTocar,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              AvatarPessoa(nome: nome, bytes: controller.fotoOutraParte?.bytes),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(rotulo, style: Theme.of(context).textTheme.labelLarge),
+                    Text(nome, style: Theme.of(context).textTheme.titleMedium),
+                  ],
+                ),
               ),
-            ),
-          ],
+              const Icon(Icons.chevron_right),
+            ],
+          ),
         ),
       ),
     );

@@ -73,6 +73,29 @@ class FakeAvaliacaoRepository implements AvaliacaoRepository {
   /// Quando verdadeiro, `avaliar` falha uma vez e nada é registrado.
   bool falharProximoEnvio = false;
 
+  /// Quantas listagens ainda falham.
+  int falhasListagem = 0;
+
+  /// Enquanto não for completado, `listarRecentes` fica carregando.
+  Completer<void>? bloquearListagem;
+
+  @override
+  Future<List<Avaliacao>> listarRecentes(String avaliadoUid) async {
+    if (bloquearListagem case final bloqueio?) await bloqueio.future;
+    if (falhasListagem > 0) {
+      falhasListagem--;
+      throw Exception('Falha de teste ao listar avaliações');
+    }
+    final recebidas =
+        avaliacoes.where((item) => item.avaliadoUid == avaliadoUid).toList()
+          ..sort((a, b) {
+            final dataA = a.criadaEm ?? DateTime.utc(0);
+            final dataB = b.criadaEm ?? DateTime.utc(0);
+            return dataB.compareTo(dataA);
+          });
+    return recebidas.take(5).toList();
+  }
+
   @override
   Future<bool> jaAvaliou({
     required String pedidoId,

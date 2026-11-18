@@ -21,6 +21,10 @@ class PerfilPublico {
 
   bool get semAvaliacoes => totalAvaliacoes == 0;
 
+  /// "1 avaliação" ou "12 avaliações".
+  String get totalExibido =>
+      totalAvaliacoes == 1 ? '1 avaliação' : '$totalAvaliacoes avaliações';
+
   /// Média com uma casa decimal, arredondada meio para cima e com vírgula
   /// (FR-009). Calculada com inteiros para não sofrer erro de ponto
   /// flutuante: 4,65 vira 4,7.

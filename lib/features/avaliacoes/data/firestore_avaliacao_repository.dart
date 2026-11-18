@@ -5,11 +5,33 @@ import '../domain/avaliacao.dart';
 import '../domain/avaliacao_erro.dart';
 import '../domain/avaliacao_repository.dart';
 
-/// Listagem das avaliações entra na História 3 (T056).
 class FirestoreAvaliacaoRepository implements AvaliacaoRepository {
   FirestoreAvaliacaoRepository(this._firestore);
 
+  static const recentes = 5;
+
   final FirebaseFirestore _firestore;
+
+  @override
+  Future<List<Avaliacao>> listarRecentes(String avaliadoUid) async {
+    final consulta = await _perfil(avaliadoUid)
+        .collection('avaliacoes')
+        .orderBy('criadaEm', descending: true)
+        .limit(recentes)
+        .get();
+    return consulta.docs.map((documento) {
+      final dados = documento.data();
+      return Avaliacao(
+        pedidoId: documento.id,
+        avaliadorUid: dados['avaliadorUid'] as String? ?? '',
+        avaliadorNome: dados['avaliadorNome'] as String? ?? '',
+        avaliadoUid: avaliadoUid,
+        nota: (dados['nota'] as num?)?.toInt() ?? 0,
+        comentario: dados['comentario'] as String? ?? '',
+        criadaEm: (dados['criadaEm'] as Timestamp?)?.toDate(),
+      );
+    }).toList();
+  }
 
   DocumentReference<Map<String, dynamic>> _perfil(String uid) =>
       _firestore.collection('profiles').doc(uid);

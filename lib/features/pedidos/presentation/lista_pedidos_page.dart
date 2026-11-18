@@ -260,6 +260,17 @@ class _PedidoAberto extends StatelessWidget {
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
+        // Perfil do contratante a partir do pedido (FR-014).
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: OutlinedButton.icon(
+            onPressed: () => context.push(
+              '/perfis/${pedido.contratanteUid}?pedido=${pedido.id}',
+            ),
+            icon: const Icon(Icons.person_outline),
+            label: const Text('Ver contratante'),
+          ),
+        ),
         ElevatedButton(
           onPressed: candidatura.executando
               ? null

@@ -5,6 +5,7 @@ import 'package:bicolocal/features/pedidos/domain/categoria.dart';
 import 'package:bicolocal/features/pedidos/domain/pedido.dart';
 import 'package:flutter/material.dart';
 
+import '../../../support/builders/test_data.dart';
 import '../../../support/fakes/fake_repositories.dart';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -108,6 +109,39 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('"Ver contratante" abre o perfil do contratante (FR-014)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      BicoLocalApp(
+        contaRepository: FakeContaRepository(contaInicial: _prestador),
+        pedidoRepository: FakePedidoRepository(pedidos: [_pedido]),
+        candidaturaRepository: FakeCandidaturaRepository(),
+        perfilRepository: FakePerfilRepository(
+          perfis: {
+            _pedido.contratanteUid: criarPerfilTeste(
+              uid: _pedido.contratanteUid,
+              nome: 'Marta Contratante',
+              perfil: Perfil.contratante,
+            ),
+          },
+        ),
+        avaliacaoRepository: FakeAvaliacaoRepository(),
+        seletorFoto: FakeSeletorFoto(),
+        initialLocation: '/pedidos',
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Ver contratante'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ver contratante'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Marta Contratante'), findsOneWidget);
+    expect(find.text('Contratante'), findsOneWidget);
   });
 
   testWidgets('formulário de publicação contém os campos da spec', (

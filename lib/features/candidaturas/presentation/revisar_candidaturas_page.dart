@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/widgets/avatar_pessoa.dart';
@@ -112,9 +113,8 @@ class _RevisarCandidaturasPageState extends State<RevisarCandidaturasPage> {
     Candidatura candidatura,
     CandidaturaController controller,
   ) {
-    final nome =
-        controller.perfisCandidatos[candidatura.prestadorUid]?.nome ??
-        'Prestador interessado';
+    final perfil = controller.perfisCandidatos[candidatura.prestadorUid];
+    final nome = perfil?.nome ?? 'Prestador interessado';
     final aceita = candidatura.estado == EstadoCandidatura.aceita;
     return Card(
       child: Padding(
@@ -122,21 +122,40 @@ class _RevisarCandidaturasPageState extends State<RevisarCandidaturasPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                // A foto só aparece na candidatura aceita (FR-020).
-                AvatarPessoa(
-                  nome: nome,
-                  bytes: aceita ? controller.fotoEscolhido?.bytes : null,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    nome,
-                    style: Theme.of(context).textTheme.titleMedium,
+            // Toque abre o perfil do candidato (FR-013).
+            InkWell(
+              onTap: () => context.push(
+                '/perfis/${candidatura.prestadorUid}?pedido=${pedido.id}',
+              ),
+              child: Row(
+                children: [
+                  // A foto só aparece na candidatura aceita (FR-020).
+                  AvatarPessoa(
+                    nome: nome,
+                    bytes: aceita ? controller.fotoEscolhido?.bytes : null,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          nome,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        if (perfil != null)
+                          Text(
+                            perfil.semAvaliacoes
+                                ? 'Ainda sem avaliações'
+                                : '${perfil.notaExibida} ★ · '
+                                      '${perfil.totalExibido}',
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             if (candidatura.estado == EstadoCandidatura.pendente)

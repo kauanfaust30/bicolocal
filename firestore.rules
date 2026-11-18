@@ -206,8 +206,9 @@ service cloud.firestore {
       // Avaliação recebida; o id é o requestId, então cada parte avalia uma
       // vez por pedido (criar sobre existente é update, negado).
       match /avaliacoes/{requestId} {
-        // `list` entra com a História 3 (T061).
+        // Qualquer pessoa autenticada lê as avaliações (FR-015).
         allow get: if signedIn();
+        allow list: if signedIn();
         allow create: if signedIn()
           && avaliaOutraParte(get(requestPath(requestId)).data, uid)
           && request.resource.data.keys().hasOnly([

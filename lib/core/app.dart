@@ -80,6 +80,9 @@ class _BicoLocalAppState extends State<BicoLocalApp> {
       ChangeNotifierProvider.value(value: _candidaturaController),
       ChangeNotifierProvider.value(value: _avaliacaoController),
       Provider<PerfilRepository>.value(value: widget.perfilRepository),
+      Provider<CandidaturaRepository>.value(
+        value: widget.candidaturaRepository,
+      ),
       Provider<AvaliacaoRepository>.value(value: widget.avaliacaoRepository),
       Provider<SeletorFoto>.value(value: widget.seletorFoto),
     ],

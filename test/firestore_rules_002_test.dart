@@ -234,6 +234,33 @@ void main() {
     });
   });
 
+  group('leitura de perfis e avaliações (FR-015)', () {
+    test('profiles: get para autenticados, sem list', () {
+      final perfis = bloco('/profiles/{uid}');
+      final semAvaliacoes = perfis.replaceAll(
+        bloco('/avaliacoes/{requestId}'),
+        '',
+      );
+      expect(regra(semAvaliacoes, 'get'), 'allow get: if signedIn();');
+      expect(regra(semAvaliacoes, 'list'), 'allow list: if false;');
+    });
+
+    test('avaliações: get e list separados, para autenticados', () {
+      final avaliacoes = bloco('/avaliacoes/{requestId}');
+      expect(regra(avaliacoes, 'get'), 'allow get: if signedIn();');
+      expect(regra(avaliacoes, 'list'), 'allow list: if signedIn();');
+    });
+
+    test('users/{uid} continua só do dono', () {
+      final usuarios = bloco('/users/{uid}');
+      expect(
+        regra(usuarios, 'get'),
+        'allow get: if signedIn() && request.auth.uid == uid;',
+      );
+      expect(regra(usuarios, 'list'), 'allow list: if false;');
+    });
+  });
+
   group('integridade da reputação (FR-027)', () {
     late String perfis;
     setUp(() => perfis = bloco('/profiles/{uid}'));
