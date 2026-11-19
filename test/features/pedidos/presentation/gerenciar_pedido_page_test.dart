@@ -227,17 +227,19 @@ void main() {
       expect(find.bySemanticsLabel('Foto de Bruno Lima'), findsOneWidget);
     });
 
-    testWidgets('em andamento, o prestador vê a foto do contratante', (
-      tester,
-    ) async {
-      await abrirGerenciar(
-        tester,
-        conta: _prestador,
-        estado: EstadoPedido.emAndamento,
-      );
+    testWidgets(
+      'em andamento, o prestador escolhido não abre Gerenciar (FR-029)',
+      (tester) async {
+        await abrirGerenciar(
+          tester,
+          conta: _prestador,
+          estado: EstadoPedido.emAndamento,
+        );
 
-      expect(find.bySemanticsLabel('Foto de Ana Prado'), findsOneWidget);
-    });
+        expect(find.text('Salvar alterações'), findsNothing);
+        expect(find.text('Meu perfil'), findsOneWidget);
+      },
+    );
 
     testWidgets('pedido cancelado volta a mostrar a inicial', (tester) async {
       await abrirGerenciar(

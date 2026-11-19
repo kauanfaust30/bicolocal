@@ -162,14 +162,18 @@ void main() {
   testWidgets('prestador escolhido vê a foto do contratante pelo pedido', (
     tester,
   ) async {
+    // Gerenciar é só do contratante (FR-029); o prestador abre o perfil
+    // pelo cartão do pedido em Meus pedidos.
     await abrir(
       tester,
       conta: prestador,
       pedido: emAndamento,
-      local: '/pedidos/pedido-1/gerenciar',
+      local: '/meus-pedidos',
     );
 
-    await tester.tap(find.bySemanticsLabel(RegExp('Ana Silva')).first);
+    await tester.ensureVisible(find.text('Ver contratante'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ver contratante'));
     await tester.pumpAndSettle();
 
     expect(find.text('Perfil'), findsOneWidget);

@@ -56,12 +56,12 @@ class PedidoService {
     required Pedido alterado,
     required String editorUid,
     required DateTime agoraUtc,
-  }) {
+  }) async {
     if (original.id != alterado.id ||
         original.contratanteUid != alterado.contratanteUid ||
         original.estado != alterado.estado ||
         original.prestadorEscolhidoUid != alterado.prestadorEscolhidoUid ||
-        !PedidoPermissions.podeEditarOuCancelar(
+        !PedidoPermissions.podeEditar(
           pedido: original,
           uid: editorUid,
           agoraUtc: agoraUtc,
@@ -93,8 +93,8 @@ class PedidoService {
     required Pedido pedido,
     required String editorUid,
     required DateTime agoraUtc,
-  }) {
-    if (!PedidoPermissions.podeEditarOuCancelar(
+  }) async {
+    if (!PedidoPermissions.podeCancelar(
       pedido: pedido,
       uid: editorUid,
       agoraUtc: agoraUtc,

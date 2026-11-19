@@ -41,26 +41,40 @@ class PedidoPermissions {
         : pedido.contratanteUid;
   }
 
-  static bool podeEditarOuCancelar({
+  /// Editar campos e gerenciar: só o contratante que publicou, com o pedido
+  /// aberto e válido ou em andamento (002 FR-029, que prevalece sobre o
+  /// FR-016 da 001). Espelha `mayEdit` das regras.
+  static bool podeEditar({
     required Pedido pedido,
-    required String uid,
+    required String? uid,
     required DateTime agoraUtc,
-  }) {
-    if (pedido.estado == EstadoPedido.cancelado ||
-        pedido.estado == EstadoPedido.concluido) {
-      return false;
-    }
-    final expirado =
-        pedido.estado == EstadoPedido.aberto &&
-        DataCivil.chave(
-              pedido.validadeAte,
-            ).compareTo(DataCivil.chave(DataCivil.hojeEmSaoPaulo(agoraUtc))) <
-            0;
-    if (expirado) return false;
-    return uid == pedido.contratanteUid ||
-        (pedido.estado == EstadoPedido.emAndamento &&
-            uid == pedido.prestadorEscolhidoUid);
-  }
+  }) => uid != null && uid == pedido.contratanteUid && _ativo(pedido, agoraUtc);
+
+  /// Cancelar: o contratante (aberto válido ou em andamento) e o prestador
+  /// escolhido (em andamento). Espelha `mayManage` das regras.
+  static bool podeCancelar({
+    required Pedido pedido,
+    required String? uid,
+    required DateTime agoraUtc,
+  }) =>
+      uid != null &&
+      _ativo(pedido, agoraUtc) &&
+      (uid == pedido.contratanteUid ||
+          (pedido.estado == EstadoPedido.emAndamento &&
+              uid == pedido.prestadorEscolhidoUid));
+
+  /// Aberto dentro da validade ou em andamento. Cancelado e concluído não
+  /// mudam mais (001 FR-020, 002 FR-002).
+  static bool _ativo(Pedido pedido, DateTime agoraUtc) =>
+      switch (pedido.estado) {
+        EstadoPedido.emAndamento => true,
+        EstadoPedido.aberto =>
+          DataCivil.chave(pedido.validadeAte).compareTo(
+                DataCivil.chave(DataCivil.hojeEmSaoPaulo(agoraUtc)),
+              ) >=
+              0,
+        EstadoPedido.cancelado || EstadoPedido.concluido => false,
+      };
 }
 
 class PedidoPermissaoErro implements Exception {

@@ -83,9 +83,24 @@ Uma avaliação por parte por pedido: o id é o `requestId`, e criar sobre docum
 - **update — novo ramo "concluir"**: `isContractor(resource.data.contratanteUid)`;
   `resource.data.estado == 'em_andamento'`; `request.resource.data.estado == 'concluido'`;
   `affectedKeys().hasOnly(['estado', 'atualizadoEm'])`; `atualizadoEm == request.time`.
-- **Imutabilidade**: nenhum ramo existente aceita `resource.data.estado == 'concluido'` (os ramos
-  de edição e cancelamento exigem `mayManage`, que só aceita `aberto` ou `em_andamento`; o aceite
-  exige `aberto`).
+- **update — ramo de edição de campos (FR-029, prevalece sobre a 001)**: passa a exigir a nova
+  função `mayEdit(resource.data)`, e não mais `mayManage`:
+
+  ```text
+  function mayEdit(data) = signedIn()
+                           && data.contratanteUid == request.auth.uid
+                           && ((data.estado == 'aberto' && validForToday(data))
+                               || data.estado == 'em_andamento')
+  ```
+
+  Só o contratante dono edita, com o pedido aberto e válido ou em andamento. O prestador escolhido
+  não edita campos em nenhum estado.
+- **update — ramo de cancelamento**: continua com `mayManage(resource.data)`, que aceita o
+  contratante (aberto válido ou em andamento) e o prestador escolhido (em andamento). O prestador
+  escolhido continua podendo cancelar.
+- **Imutabilidade**: nenhum ramo existente aceita `resource.data.estado == 'concluido'` (o ramo
+  de edição exige `mayEdit` e o de cancelamento `mayManage`, que só aceitam `aberto` ou
+  `em_andamento`; o aceite exige `aberto`).
 - **Candidaturas**: `applications` create já exige `isOpenAndValid`, então pedidos concluídos não
   recebem candidaturas.
 
@@ -119,6 +134,7 @@ só pelo processo de retenção da 001, nunca por clientes (FR-028).
 
 `test/firestore_rules_002_test.dart` (estático, sem Firebase) confere, antes de cada mudança nas
 regras: blocos novos presentes; `update, delete: if false` em avaliações e nas duas cópias de
-foto; ausência de `allow list` em `profiles`; ramo "concluir" restrito a `em_andamento`; leitura da
+foto; ausência de `allow list` em `profiles`; ramo "concluir" restrito a `em_andamento`; ramo de
+edição com `mayEdit` (só o contratante) e de cancelamento com `mayManage`; leitura da
 foto do candidato condicionada a `prestadorEscolhidoUid == providerUid`. A validação real é feita
 pelo [quickstart.md](../quickstart.md) após o deploy.

@@ -62,6 +62,14 @@ class _ConcluirPedidoPageState extends State<ConcluirPedidoPage> {
             child: Text('Não foi possível abrir este pedido.'),
           );
         }
+        // Só o contratante conclui (FR-001, FR-029); quem mais abrir por
+        // link vai ao início.
+        if (contas.conta?.uid != pedido.contratanteUid) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) context.go('/inicio');
+          });
+          return const SizedBox.shrink();
+        }
         if (_recusado ||
             !PedidoPermissions.podeConcluir(
               pedido: pedido,

@@ -55,6 +55,16 @@ service cloud.firestore {
                 || data.prestadorEscolhidoUid == request.auth.uid)));
     }
 
+    // Edição de campos: só o contratante dono, com o pedido aberto e válido
+    // ou em andamento. O prestador escolhido não edita (002 FR-029, que
+    // prevalece sobre 001 FR-016); ele só cancela, por mayManage.
+    function mayEdit(data) {
+      return signedIn()
+        && data.contratanteUid == request.auth.uid
+        && ((data.estado == 'aberto' && validForToday(data))
+          || data.estado == 'em_andamento');
+    }
+
     function isOpenAndValid(data) {
       return data.estado == 'aberto' && validForToday(data);
     }
@@ -280,7 +290,7 @@ service cloud.firestore {
       allow update: if signedIn()
         && request.resource.data.contratanteUid == resource.data.contratanteUid
         && (
-          (mayManage(resource.data)
+          (mayEdit(resource.data)
             && request.resource.data.estado == resource.data.estado
             && request.resource.data.prestadorEscolhidoUid == resource.data.prestadorEscolhidoUid
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([

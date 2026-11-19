@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/registro_falha.dart';
 import '../../conta/domain/contact_access_policy.dart';
 import '../../conta/domain/conta.dart';
 import '../../pedidos/domain/pedido.dart';
@@ -211,6 +212,45 @@ class CandidaturaController extends ChangeNotifier {
     required Pedido pedido,
     required Conta visualizador,
   }) async {
+    emailContato = await _emailDaOutraParte(
+      pedido: pedido,
+      visualizador: visualizador,
+    );
+  }
+
+  /// E-mail da outra parte por `uid:pedidoId`, para os cartões de Meus
+  /// pedidos, onde o prestador escolhido vê o contato (001 FR-018, 002
+  /// FR-029).
+  final Map<String, String?> _contatosPorPedido = {};
+
+  String? contatoDoPedido({
+    required Pedido pedido,
+    required Conta visualizador,
+  }) => _contatosPorPedido['${visualizador.uid}:${pedido.id}'];
+
+  Future<void> carregarContatoDoPedido({
+    required Pedido pedido,
+    required Conta visualizador,
+  }) async {
+    final chave = '${visualizador.uid}:${pedido.id}';
+    try {
+      _contatosPorPedido[chave] = await _emailDaOutraParte(
+        pedido: pedido,
+        visualizador: visualizador,
+      );
+    } catch (falha) {
+      registrarFalha('Falha ao carregar contato do pedido', falha);
+      _contatosPorPedido.remove(chave);
+    }
+    notifyListeners();
+  }
+
+  /// Só devolve o e-mail quando a política de contato permite (001 FR-018,
+  /// FR-024); senão, `null`.
+  Future<String?> _emailDaOutraParte({
+    required Pedido pedido,
+    required Conta visualizador,
+  }) async {
     final outroUid = visualizador.uid == pedido.contratanteUid
         ? pedido.prestadorEscolhidoUid
         : pedido.contratanteUid;
@@ -220,15 +260,14 @@ class CandidaturaController extends ChangeNotifier {
           leitorUid: visualizador.uid,
           donoContatoUid: outroUid,
         )) {
-      emailContato = null;
-      return;
+      return null;
     }
-    emailContato = visualizador.uid == pedido.contratanteUid
-        ? await _repository.carregarEmailPrestador(
+    return visualizador.uid == pedido.contratanteUid
+        ? _repository.carregarEmailPrestador(
             pedidoId: pedido.id,
             prestadorUid: outroUid,
           )
-        : await _repository.carregarEmailContratante(
+        : _repository.carregarEmailContratante(
             pedidoId: pedido.id,
             contratanteUid: outroUid,
           );

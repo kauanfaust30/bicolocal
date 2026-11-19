@@ -40,3 +40,4 @@
 ## Notes
 
 - Decisão do usuário: a busca inicial usa a cidade do perfil, e o prestador pode selecionar outra cidade.
+- Precedência da 002 (2026-11-18): o FR-016 foi alterado pelo FR-029 da 002 — depois do aceite, só o contratante edita e gerencia o pedido; o prestador escolhido vê, cancela em andamento e avalia depois de concluído. Os requisitos desta spec não foram reescritos; há notas de precedência na spec e no contrato de segurança.

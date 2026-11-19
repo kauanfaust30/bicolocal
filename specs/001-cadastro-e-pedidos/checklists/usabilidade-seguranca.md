@@ -38,3 +38,4 @@
 - `$speckit-implement` lê o estado das checklists como referência e não deve alterar seus marcadores.
 - `checklists/requirements.md` tem ciclo de manutenção próprio por `$speckit-specify` e `$speckit-clarify`.
 - Esta checklist avalia a redação e cobertura dos requisitos; não verifica o comportamento do código.
+- Precedência da 002 (2026-11-18): FR-016 alterado pelo FR-029 da 002 (só o contratante edita depois do aceite; o prestador escolhido vê e cancela). Os marcadores desta checklist não foram alterados; a revisão do novo requisito está no CHK029 de `specs/002-perfil-e-avaliacoes/checklists/privacidade-avaliacoes.md`.

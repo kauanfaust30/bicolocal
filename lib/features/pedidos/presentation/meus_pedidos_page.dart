@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/async/async_state.dart';
 import '../../../core/widgets/estado_ilustrado.dart';
 import '../../avaliacoes/presentation/avaliacao_controller.dart';
+import '../../candidaturas/presentation/candidatura_controller.dart';
 import '../../conta/domain/conta.dart';
 import '../../conta/domain/perfil.dart';
 import '../../conta/presentation/conta_controller.dart';
@@ -84,16 +85,23 @@ class _MeusPedidosPageState extends State<MeusPedidosPage> {
             final pedido = pedidos[index];
             final conta = contaController.conta;
             final autor = conta?.uid == pedido.contratanteUid;
-            final podeGerenciar =
+            // Gerenciar (editar) é só do contratante (002 FR-029).
+            final podeGerenciar = PedidoPermissions.podeEditar(
+              pedido: pedido,
+              uid: conta?.uid,
+              agoraUtc: DateTime.now().toUtc(),
+            );
+            final prestadorEscolhido =
                 conta != null &&
-                PedidoPermissions.podeEditarOuCancelar(
-                  pedido: pedido,
-                  uid: conta.uid,
-                  agoraUtc: DateTime.now().toUtc(),
-                );
+                pedido.prestadorEscolhidoUid == conta.uid &&
+                !autor;
             return PedidoCard(
               pedido: pedido,
+              // O prestador escolhido não abre Gerenciar; vê o pedido aqui.
+              detalhes: prestadorEscolhido,
               acoes: [
+                if (prestadorEscolhido)
+                  _AcoesPrestadorEscolhido(pedido: pedido, conta: conta),
                 if (autor && pedido.estado == EstadoPedido.aberto)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -137,6 +145,108 @@ class _MeusPedidosPageState extends State<MeusPedidosPage> {
       },
     ),
   );
+}
+
+/// O que o prestador escolhido faz depois do aceite (002 FR-029): ver o
+/// contato do contratante enquanto em andamento (001 FR-018), abrir o perfil
+/// do contratante e cancelar o pedido em andamento. Não edita, não gerencia
+/// e não conclui.
+class _AcoesPrestadorEscolhido extends StatefulWidget {
+  const _AcoesPrestadorEscolhido({required this.pedido, required this.conta});
+
+  final Pedido pedido;
+  final Conta conta;
+
+  @override
+  State<_AcoesPrestadorEscolhido> createState() =>
+      _AcoesPrestadorEscolhidoState();
+}
+
+class _AcoesPrestadorEscolhidoState extends State<_AcoesPrestadorEscolhido> {
+  bool get _emAndamento => widget.pedido.estado == EstadoPedido.emAndamento;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_emAndamento) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<CandidaturaController>().carregarContatoDoPedido(
+          pedido: widget.pedido,
+          visualizador: widget.conta,
+        );
+      }
+    });
+  }
+
+  Future<void> _cancelar() async {
+    final controller = context.read<PedidoController>();
+    final cancelado = await controller.cancelarPedido(
+      editor: widget.conta,
+      pedido: widget.pedido,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          cancelado
+              ? 'Pedido cancelado.'
+              : controller.erro ??
+                    'Não foi possível cancelar. Tente novamente.',
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final contato = _emAndamento
+        ? context.watch<CandidaturaController>().contatoDoPedido(
+            pedido: widget.pedido,
+            visualizador: widget.conta,
+          )
+        : null;
+    final podeCancelar = PedidoPermissions.podeCancelar(
+      pedido: widget.pedido,
+      uid: widget.conta.uid,
+      agoraUtc: DateTime.now().toUtc(),
+    );
+    final publicando = context.watch<PedidoController>().publicando;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (contato != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: SelectableText('E-mail de contato: $contato'),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: OutlinedButton.icon(
+            onPressed: () => context.push(
+              '/perfis/${widget.pedido.contratanteUid}'
+              '?pedido=${widget.pedido.id}',
+            ),
+            icon: const Icon(Icons.person_outline),
+            label: const Text('Ver contratante'),
+          ),
+        ),
+        if (podeCancelar)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: OutlinedButton.icon(
+              onPressed: publicando ? null : _cancelar,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error,
+                side: BorderSide(color: Theme.of(context).colorScheme.error),
+              ),
+              icon: const Icon(Icons.cancel_outlined),
+              label: const Text('Cancelar pedido'),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 /// "Avaliar" enquanto a pessoa não avaliou; depois, "Você já avaliou"

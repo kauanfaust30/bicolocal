@@ -24,6 +24,13 @@
 
 - Q: A pessoa pode trocar de perfil depois do cadastro? → A: Não. O perfil (contratante ou prestador) é escolhido uma única vez, no cadastro, e não pode ser alterado depois. Esta decisão substitui a alternância de perfil prevista anteriormente.
 
+> **Precedência da 002 (2026-11-18)**: o FR-016 e os cenários 3 e 7 da História 3 foram alterados
+> pelo FR-029 de `specs/002-perfil-e-avaliacoes/spec.md`. Depois do aceite, somente o contratante
+> que publicou o pedido o edita e gerencia; o prestador escolhido vê o pedido e o contato (FR-018),
+> pode cancelá-lo enquanto estiver em andamento e, depois de concluído, avaliar. A tabela
+> "Precedência sobre a 001" em `specs/002-perfil-e-avaliacoes/plan.md` é a referência em caso de
+> conflito.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Publicar e encontrar pedidos locais (Priority: P1)
@@ -100,6 +107,8 @@ envolvidas gerenciem o serviço e vejam os dados de contato protegidos.
 **Independent Test**: Criar um pedido, candidatar-se como prestador, aceitar a candidatura como
 contratante e verificar que ambas as partes podem editar e cancelar o pedido, enquanto outro
 prestador não pode.
+
+> Cenários 3 e 7: o prestador escolhido não edita mais o pedido; só cancela (002, FR-029).
 
 **Acceptance Scenarios**:
 
@@ -195,7 +204,8 @@ prestador não pode.
   aberto.
 - **FR-016**: O sistema MUST permitir que o contratante que publicou um pedido e um prestador
   cuja candidatura foi aceita o editem e cancelem. Antes do aceite, somente o contratante que
-  publicou o pedido pode editá-lo ou cancelá-lo.
+  publicou o pedido pode editá-lo ou cancelá-lo. *(Alterado pela 002, FR-029: depois do aceite,
+  só o contratante edita; o prestador escolhido apenas vê e cancela.)*
 - **FR-017**: O sistema MUST permitir que um prestador se candidate a um pedido aberto e que o
   contratante aceite uma candidatura; cada pedido MUST ter no máximo um prestador escolhido.
 - **FR-018**: Depois do aceite, o sistema MUST exibir o e-mail de acesso de cada parte somente ao

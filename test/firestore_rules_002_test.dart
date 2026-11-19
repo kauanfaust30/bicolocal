@@ -141,6 +141,54 @@ void main() {
     });
   });
 
+  group('edição e cancelamento depois do aceite (FR-029)', () {
+    String funcao(String nome) {
+      final inicio = regras.indexOf('function $nome(');
+      expect(inicio, isNot(-1), reason: 'função $nome não encontrada');
+      return regras.substring(inicio, regras.indexOf('}', inicio));
+    }
+
+    /// Ramo do update de requests que contém [marca]. Os ramos ficam
+    /// separados por `|| (` no início da linha.
+    String ramo(String marca) {
+      final atualizacao = regra(bloco('/requests/{requestId}'), 'update');
+      final ramos = atualizacao
+          .split(RegExp(r'\n\s*\|\| \('))
+          .where((texto) => texto.contains(marca))
+          .toList();
+      expect(ramos, hasLength(1), reason: 'ramo com $marca');
+      return ramos.single;
+    }
+
+    test('mayEdit: só o contratante dono, aberto válido ou em andamento', () {
+      final mayEdit = funcao('mayEdit');
+      expect(mayEdit, contains('data.contratanteUid == request.auth.uid'));
+      expect(mayEdit, contains("data.estado == 'aberto'"));
+      expect(mayEdit, contains('validForToday(data)'));
+      expect(mayEdit, contains("data.estado == 'em_andamento'"));
+      expect(mayEdit, isNot(contains('prestadorEscolhidoUid')));
+    });
+
+    test('mayManage continua aceitando o prestador escolhido em andamento', () {
+      expect(
+        funcao('mayManage'),
+        contains('data.prestadorEscolhidoUid == request.auth.uid'),
+      );
+    });
+
+    test('edição de campos usa mayEdit', () {
+      final edicao = ramo("'titulo', 'categoriaId'");
+      expect(edicao, contains('mayEdit(resource.data)'));
+      expect(edicao, isNot(contains('mayManage(')));
+    });
+
+    test('cancelamento usa mayManage', () {
+      final cancelamento = ramo("request.resource.data.estado == 'cancelado'");
+      expect(cancelamento, contains('mayManage(resource.data)'));
+      expect(cancelamento, isNot(contains('mayEdit(')));
+    });
+  });
+
   group('concluir pedido (FR-001, FR-002)', () {
     late String atualizacao;
     setUp(() => atualizacao = regra(bloco('/requests/{requestId}'), 'update'));

@@ -54,10 +54,12 @@ A 002 tem precedência sobre a `specs/001-cadastro-e-pedidos/spec.md` nos três 
 | Estado concluído | FR-008: conclusão e avaliação fora do escopo | Pedido em andamento pode ir a `concluido`, só pelo contratante; imutável depois |
 | Dados visíveis a outras pessoas | FR-023: nome invisível a outros usuários | Nome, cidade, tipo e reputação legíveis por qualquer pessoa autenticada (FR-015 da 002); bairro e e-mail continuam privados; foto só entre as partes após o aceite |
 | Cadastro | FR-001/FR-004: e-mail, senha, nome, cidade, bairro e perfil | Foto também obrigatória |
+| Gerenciamento depois do aceite (2026-11-18) | FR-016: contratante e prestador escolhido editam e cancelam | Só o contratante edita, gerencia e conclui; o prestador escolhido vê, cancela em andamento e avalia depois de concluído (FR-029); regras com `mayEdit` na edição e `mayManage` no cancelamento |
 
-Os demais requisitos da 001 continuam valendo. A spec da 001 não é editada; esta tabela é a
-referência em caso de conflito. Só o `data-model.md` da 001 recebe uma nota sobre a
-retenção das cópias de foto (T063).
+Os demais requisitos da 001 continuam valendo. Os requisitos da 001 não são reescritos; esta
+tabela é a referência em caso de conflito. A 001 recebe apenas notas de precedência que apontam
+para cá (spec e contrato de segurança, 2026-11-18) e, no `data-model.md`, a nota sobre a retenção
+das cópias de foto (T063).
 
 ## Dependências novas
 

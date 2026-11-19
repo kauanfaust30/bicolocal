@@ -50,10 +50,9 @@ class _GerenciarPedidoPageState extends State<GerenciarPedidoPage> {
             child: Text('Não foi possível abrir este pedido.'),
           );
         }
-        if (!PedidoPermissions.ehParte(
-          pedido: pedido,
-          uid: contas.conta?.uid,
-        )) {
+        // Gerenciar e editar são só do contratante (002 FR-029); o prestador
+        // escolhido que abre por link vai ao início.
+        if (contas.conta?.uid != pedido.contratanteUid) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) context.go('/inicio');
           });

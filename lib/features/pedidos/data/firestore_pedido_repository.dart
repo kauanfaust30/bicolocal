@@ -107,7 +107,7 @@ class FirestorePedidoRepository implements PedidoRepository {
       final dados = documento.data();
       if (dados == null) throw const PedidoPermissaoErro();
       final atual = PedidoDto.fromDocument(documento.id, dados);
-      if (!PedidoPermissions.podeEditarOuCancelar(
+      if (!PedidoPermissions.podeEditar(
         pedido: atual,
         uid: editorUid,
         agoraUtc: agoraUtc,
@@ -156,7 +156,7 @@ class FirestorePedidoRepository implements PedidoRepository {
       final dados = documento.data();
       if (dados == null) throw const PedidoPermissaoErro();
       final pedido = PedidoDto.fromDocument(documento.id, dados);
-      if (!PedidoPermissions.podeEditarOuCancelar(
+      if (!PedidoPermissions.podeCancelar(
         pedido: pedido,
         uid: editorUid,
         agoraUtc: agoraUtc,

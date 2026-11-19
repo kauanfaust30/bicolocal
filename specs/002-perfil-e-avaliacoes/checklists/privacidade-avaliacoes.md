@@ -54,6 +54,8 @@
 - [x] CHK027 Os cenários cobrem envio repetido, envio simultâneo das duas partes e falha de envio com preservação da nota e do comentário? [Cobertura, Recuperação, Spec §Edge Cases]
 - [x] CHK028 O SC-004 e o SC-007 permitem verificar objetivamente a integridade da reputação após várias avaliações de pedidos diferentes? [Mensurabilidade, Spec §SC-004, §SC-007]
 
+- [ ] CHK029 O FR-029 define de forma inequívoca o que o prestador escolhido pode fazer depois do aceite (ver o pedido e o contato, cancelar em andamento, avaliar após concluído) e o que lhe é recusado (editar, gerenciar, concluir), e essa restrição está imposta também nas regras de acesso aos dados? [Consistência, Spec §FR-029, §FR-001; 001 §FR-016]
+
 ## Notes
 
 - Marque itens `[x]` somente após revisão confirmar que o critério de qualidade do requisito foi satisfeito.
@@ -72,3 +74,4 @@
 - Reavaliação final de 2026-11-12: CHK004 e CHK006 (Assumptions), CHK008 (Clarifications: regra 9
   substituída pelo FR-020), CHK009 (FR-010), CHK011 (FR-024), CHK014 (cenário 10 da História 3),
   CHK015 (FR-018) e CHK026 (Assumptions) resolvidos. Todos os 28 itens estão resolvidos.
+- Mudança de requisito de 2026-11-18 (FR-029, precedência sobre o FR-016 da 001): CHK029 adicionado sem marcação, para revisão. Os demais itens não foram reavaliados.

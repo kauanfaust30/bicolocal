@@ -52,3 +52,4 @@
   candidaturas anteriores à funcionalidade não têm foto e, aceitas, mostram a inicial. Coerente
   com research.md D4 (pendência resolvida). FR-019 e cenário 5 também cobrem o contratante: a nova
   foto vale para pedidos aceitos depois da troca; os já aceitos mantêm a foto do momento do aceite.
+- Mudança de requisito de 2026-11-18: novo FR-029 — depois do aceite, só o contratante edita, gerencia e conclui; o prestador escolhido vê o pedido e o contato, cancela em andamento e avalia depois de concluído. Prevalece sobre o FR-016 da 001; registrado em Clarifications, na seção "Relação com a funcionalidade 001", no cenário 10 da História 2, nos casos de borda, no plan.md (Precedência) e no contrato de segurança (`mayEdit`). A 001 recebeu notas de precedência.

@@ -21,6 +21,7 @@ Este documento define o comportamento observável entre os repositórios do app 
 5. Permitir que o titular leia o próprio contato. Contatos privados vinculados ao pedido só podem ser lidos quando `estado == em_andamento` e o leitor é `contratanteUid` ou `prestadorEscolhidoUid`; negar após cancelamento. A cópia do contratante é criada apenas pelo contratante autor durante o aceite e deve corresponder ao e-mail autenticado.
 6. Fazer aceite como operação atômica condicionada a pedido `aberto`, candidatura `pendente` e pedido ainda dentro da validade; registrar apenas um `prestadorEscolhidoUid`.
 7. Recusar candidaturas repetidas ao mesmo pedido, pedidos expirados/cancelados, e edição/cancelamento por pessoa sem autorização conforme FR-016 a FR-021.
+   - **Precedência da 002 (FR-029, 2026-11-18)**: a edição de campos do pedido usa `mayEdit` (só o contratante dono, com o pedido aberto e válido ou em andamento); o cancelamento continua com `mayManage` (contratante, ou prestador escolhido em andamento). Ver `specs/002-perfil-e-avaliacoes/contracts/firestore-security.md`.
 8. Ao aceitar, persistir a candidatura escolhida como `aceita` e as demais como `recusada`, sem aceitar duas em concorrência.
 9. Regras Firestore são por documento, não filtram resultados e não podem remover campos de documentos retornados. Por isso, manter contato fora de documentos consultados pela lista; incluir na consulta as mesmas restrições verificadas pelas regras.
 

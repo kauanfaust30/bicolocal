@@ -77,12 +77,37 @@ void main() {
     },
   );
 
-  testWidgets('prestador escolhido continua podendo gerenciar o pedido', (
+  // 002 FR-029: depois do aceite, só o contratante gerencia, edita e
+  // conclui; o prestador escolhido que abre essas rotas por link vai ao início.
+  for (final rota in ['gerenciar', 'concluir']) {
+    testWidgets('prestador escolhido que abre $rota por link volta ao início', (
+      tester,
+    ) async {
+      await abrir(
+        tester,
+        conta: prestador,
+        caminho: '/pedidos/pedido-1/$rota',
+        pedidos: [
+          pedidoAberto.copyWith(
+            estado: EstadoPedido.emAndamento,
+            prestadorEscolhidoUid: prestador.uid,
+          ),
+        ],
+      );
+
+      expect(find.text('Gerenciar pedido'), findsNothing);
+      expect(find.text('Salvar alterações'), findsNothing);
+      expect(find.text('Concluir pedido'), findsNothing);
+      expect(find.text('Meu perfil'), findsOneWidget);
+    });
+  }
+
+  testWidgets('contratante autor gerencia o pedido em andamento', (
     tester,
   ) async {
     await abrir(
       tester,
-      conta: prestador,
+      conta: contratante,
       caminho: '/pedidos/pedido-1/gerenciar',
       pedidos: [
         pedidoAberto.copyWith(
@@ -93,6 +118,7 @@ void main() {
     );
 
     expect(find.text('Gerenciar pedido'), findsOneWidget);
+    expect(find.text('Salvar alterações'), findsOneWidget);
   });
 
   testWidgets('contratante que abre a lista por cidade volta para o início', (

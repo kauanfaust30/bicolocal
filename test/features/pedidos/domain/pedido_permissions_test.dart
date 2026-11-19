@@ -3,65 +3,82 @@ import 'package:bicolocal/features/pedidos/domain/pedido_permissions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('contratante autor e prestador escolhido podem gerenciar sem depender do perfil ativo', () {
-    final pedido = _pedido();
-    final agora = DateTime.utc(2026, 10, 27, 12);
+  final agora = DateTime.utc(2026, 10, 27, 12);
 
-    expect(
-      PedidoPermissions.podeEditarOuCancelar(
-        pedido: pedido,
-        uid: 'contratante-1',
-        agoraUtc: agora,
-      ),
-      isTrue,
-    );
-    expect(
-      PedidoPermissions.podeEditarOuCancelar(
-        pedido: pedido,
-        uid: 'prestador-1',
-        agoraUtc: agora,
-      ),
-      isTrue,
-    );
-    expect(
-      PedidoPermissions.podeEditarOuCancelar(
-        pedido: pedido,
-        uid: 'outro',
-        agoraUtc: agora,
-      ),
-      isFalse,
+  bool podeEditar(Pedido pedido, String uid) =>
+      PedidoPermissions.podeEditar(pedido: pedido, uid: uid, agoraUtc: agora);
+
+  bool podeCancelar(Pedido pedido, String uid) =>
+      PedidoPermissions.podeCancelar(pedido: pedido, uid: uid, agoraUtc: agora);
+
+  group('editar (002 FR-029, prevalece sobre 001 FR-016)', () {
+    test('só o contratante edita, aberto válido ou em andamento', () {
+      final aberto = _pedido(estado: EstadoPedido.aberto);
+      expect(podeEditar(aberto, 'contratante-1'), isTrue);
+      expect(podeEditar(_pedido(), 'contratante-1'), isTrue);
+    });
+
+    test('prestador escolhido não edita o pedido em andamento', () {
+      expect(podeEditar(_pedido(), 'prestador-1'), isFalse);
+    });
+
+    test(
+      'recusa quem não é parte e pedido expirado, cancelado ou concluído',
+      () {
+        expect(podeEditar(_pedido(), 'outro'), isFalse);
+        expect(
+          podeEditar(
+            _pedido(
+              estado: EstadoPedido.aberto,
+              validadeAte: DateTime.utc(2026, 10, 26),
+            ),
+            'contratante-1',
+          ),
+          isFalse,
+        );
+        for (final estado in [EstadoPedido.cancelado, EstadoPedido.concluido]) {
+          expect(
+            podeEditar(_pedido(estado: estado), 'contratante-1'),
+            isFalse,
+            reason: estado.name,
+          );
+        }
+      },
     );
   });
 
-  test('recusa pedido expirado ou cancelado e prestador não escolhido', () {
-    final agora = DateTime.utc(2026, 10, 27, 12);
-    expect(
-      PedidoPermissions.podeEditarOuCancelar(
-        pedido: _pedido(
-          estado: EstadoPedido.aberto,
-          validadeAte: DateTime.utc(2026, 10, 26),
+  group('cancelar (001 FR-016, FR-020)', () {
+    test(
+      'contratante e prestador escolhido cancelam o pedido em andamento',
+      () {
+        expect(podeCancelar(_pedido(), 'contratante-1'), isTrue);
+        expect(podeCancelar(_pedido(), 'prestador-1'), isTrue);
+      },
+    );
+
+    test('antes do aceite, só o contratante cancela', () {
+      final aberto = _pedido(estado: EstadoPedido.aberto);
+      expect(podeCancelar(aberto, 'contratante-1'), isTrue);
+      expect(podeCancelar(aberto, 'prestador-1'), isFalse);
+    });
+
+    test('recusa quem não é parte e pedido expirado ou cancelado', () {
+      expect(podeCancelar(_pedido(), 'outro'), isFalse);
+      expect(
+        podeCancelar(
+          _pedido(
+            estado: EstadoPedido.aberto,
+            validadeAte: DateTime.utc(2026, 10, 26),
+          ),
+          'contratante-1',
         ),
-        uid: 'contratante-1',
-        agoraUtc: agora,
-      ),
-      isFalse,
-    );
-    expect(
-      PedidoPermissions.podeEditarOuCancelar(
-        pedido: _pedido(estado: EstadoPedido.cancelado),
-        uid: 'contratante-1',
-        agoraUtc: agora,
-      ),
-      isFalse,
-    );
-    expect(
-      PedidoPermissions.podeEditarOuCancelar(
-        pedido: _pedido(),
-        uid: 'outro',
-        agoraUtc: agora,
-      ),
-      isFalse,
-    );
+        isFalse,
+      );
+      expect(
+        podeCancelar(_pedido(estado: EstadoPedido.cancelado), 'contratante-1'),
+        isFalse,
+      );
+    });
   });
 
   group('foto da outra parte (FR-020)', () {
@@ -186,14 +203,10 @@ void main() {
   });
 
   test('pedido concluído não pode ser editado nem cancelado (FR-002)', () {
-    expect(
-      PedidoPermissions.podeEditarOuCancelar(
-        pedido: _pedido(estado: EstadoPedido.concluido),
-        uid: 'contratante-1',
-        agoraUtc: DateTime.utc(2026, 10, 27, 12),
-      ),
-      isFalse,
-    );
+    final concluido = _pedido(estado: EstadoPedido.concluido);
+    expect(podeEditar(concluido, 'contratante-1'), isFalse);
+    expect(podeCancelar(concluido, 'contratante-1'), isFalse);
+    expect(podeCancelar(concluido, 'prestador-1'), isFalse);
   });
 }
 

@@ -26,10 +26,18 @@
 - A regra (9) da descrição original ("a foto aparece ... na lista de candidaturas e no pedido") foi
   substituída pelo FR-020.
 
+### Session 2026-11-18
+
+- Q: Depois do aceite, quem pode editar, gerenciar e concluir o pedido? → A: Somente o contratante
+  que publicou o pedido. O prestador escolhido pode apenas ver o pedido (com o contato, conforme o
+  FR-018 da 001), cancelá-lo enquanto estiver em andamento e, depois de concluído, avaliar. Esta
+  resposta substitui o FR-016 da 001 no ponto em que permitia ao prestador escolhido editar o
+  pedido (FR-029).
+
 ## Relação com a funcionalidade 001
 
 Esta funcionalidade depende de `specs/001-cadastro-e-pedidos` (contas, perfil imutável, pedidos,
-candidaturas e aceite) e altera três pontos dela:
+candidaturas e aceite) e altera quatro pontos dela:
 
 - **Estado concluído**: a 001 deixa conclusão e avaliação fora do escopo (FR-008). Aqui o pedido
   ganha o estado concluído, que só pode ser alcançado a partir de em andamento.
@@ -38,6 +46,10 @@ candidaturas e aceite) e altera três pontos dela:
   pontos definidos em FR-012 a FR-014. Bairro e e-mail continuam privados, como na 001.
 - **Cadastro**: a 001 exige e-mail, senha, nome, cidade, bairro e perfil (FR-001 e FR-004). Aqui a
   foto passa a ser também obrigatória.
+- **Gerenciamento depois do aceite**: a 001 permite que o contratante e o prestador escolhido
+  editem e cancelem o pedido em andamento (FR-016, cenários 3 e 7 da História 3). Aqui só o
+  contratante edita, gerencia e conclui; o prestador escolhido vê o pedido, pode cancelá-lo e,
+  depois de concluído, avaliar (FR-029).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -114,6 +126,10 @@ avaliar de novo e que uma terceira pessoa não consegue avaliar.
    é indicado com orientação para corrigir.
 9. **Given** que uma parte avaliou e a outra ainda não, **When** a outra parte abre o pedido,
    **Then** ainda vê o botão de avaliar.
+10. **Given** um pedido em andamento, **When** o prestador escolhido tenta editá-lo, gerenciá-lo
+    ou concluí-lo, inclusive abrindo essas telas por link, **Then** a ação é recusada, ele é levado
+    ao início e o pedido não muda; ele continua vendo o pedido e o contato, pode cancelá-lo e pode
+    abrir o perfil do contratante.
 
 ---
 
@@ -182,6 +198,8 @@ ausência de bairro e e-mail.
   tentar de novo.
 - Se o contratante nunca marcar o pedido como concluído, nenhuma das partes pode avaliar.
 - Um pedido concluído não pode ser editado, cancelado, reaberto nem receber candidaturas.
+- O prestador escolhido não edita o pedido em andamento; se discordar do que o contratante
+  alterou, pode cancelar o pedido (FR-029).
 - A nota média não é exibida enquanto não houver avaliações; com avaliações, é exibida com uma casa
   decimal.
 - Candidaturas feitas antes desta funcionalidade não têm foto; se forem aceitas, a outra parte vê a
@@ -198,6 +216,11 @@ ausência de bairro e e-mail.
   outro estado.
 - **FR-002**: Um pedido concluído MUST NOT ser editado, cancelado, reaberto nem receber
   candidaturas.
+- **FR-029**: Depois do aceite, somente o contratante que publicou o pedido MUST poder editá-lo,
+  gerenciá-lo e concluí-lo. O prestador escolhido MUST poder apenas ver o pedido e o contato (001
+  FR-018), cancelá-lo enquanto estiver em andamento e, depois de concluído, avaliar (FR-003); a
+  edição pelo prestador escolhido MUST ser recusada também nas regras de acesso aos dados. Este
+  requisito prevalece sobre o FR-016 da 001.
 
 **Avaliações**
 

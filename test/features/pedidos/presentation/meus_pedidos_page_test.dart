@@ -164,4 +164,133 @@ void main() {
       expect(find.text('Enviar avaliação'), findsOneWidget);
     });
   });
+
+  group('depois do aceite, por perfil (002 FR-029)', () {
+    final prestador = criarContaTeste(uid: 'prestador-1');
+    final emAndamento =
+        criarPedidoTeste(
+          id: 'p1',
+          contratanteUid: contratante.uid,
+          titulo: 'Pintar a sala',
+          dataDesejada: DateTime.utc(2099, 11, 6),
+          validadeAte: DateTime.utc(2099, 11, 5),
+        ).copyWith(
+          estado: EstadoPedido.emAndamento,
+          prestadorEscolhidoUid: prestador.uid,
+        );
+    final concluido = emAndamento.copyWith(estado: EstadoPedido.concluido);
+
+    Future<FakePedidoRepository> abrirComo(
+      WidgetTester tester,
+      Conta conta,
+      Pedido pedido,
+    ) async {
+      final pedidos = FakePedidoRepository(pedidos: [pedido]);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(
+        BicoLocalApp(
+          contaRepository: FakeContaRepository(contaInicial: conta),
+          pedidoRepository: pedidos,
+          candidaturaRepository: FakeCandidaturaRepository()
+            ..emailsContratantes['p1'] = 'contratante@example.com',
+          perfilRepository: FakePerfilRepository(
+            perfis: {
+              contratante.uid: criarPerfilTeste(
+                uid: contratante.uid,
+                nome: 'Ana Contratante',
+                perfil: Perfil.contratante,
+              ),
+            },
+          ),
+          avaliacaoRepository: FakeAvaliacaoRepository(),
+          seletorFoto: FakeSeletorFoto(),
+          initialLocation: '/meus-pedidos',
+        ),
+      );
+      await tester.pumpAndSettle();
+      return pedidos;
+    }
+
+    Future<void> tocar(WidgetTester tester, String texto) async {
+      await tester.ensureVisible(find.text(texto));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(texto));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('contratante: gerencia e conclui o pedido em andamento', (
+      tester,
+    ) async {
+      await abrirComo(tester, contratante, emAndamento);
+
+      expect(find.text('Gerenciar pedido'), findsOneWidget);
+      expect(find.text('Concluir pedido'), findsOneWidget);
+      expect(find.text('Ver contratante'), findsNothing);
+    });
+
+    testWidgets(
+      'prestador escolhido: sem gerenciar, editar nem concluir; vê o pedido',
+      (tester) async {
+        await abrirComo(tester, prestador, emAndamento);
+
+        expect(find.text('Pintar a sala'), findsOneWidget);
+        expect(find.text('Gerenciar pedido'), findsNothing);
+        expect(find.text('Salvar alterações'), findsNothing);
+        expect(find.text('Concluir pedido'), findsNothing);
+        expect(find.text('Cancelar pedido'), findsOneWidget);
+        expect(find.text('Ver contratante'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'prestador escolhido vê o contato do contratante (001 FR-018)',
+      (tester) async {
+        await abrirComo(tester, prestador, emAndamento);
+
+        expect(
+          find.text('E-mail de contato: contratante@example.com'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('prestador escolhido cancela o pedido em andamento', (
+      tester,
+    ) async {
+      final pedidos = await abrirComo(tester, prestador, emAndamento);
+
+      await tocar(tester, 'Cancelar pedido');
+
+      expect(pedidos.pedidos.single.estado, EstadoPedido.cancelado);
+      expect(find.text('Pedido cancelado.'), findsOneWidget);
+      expect(find.text('Cancelar pedido'), findsNothing);
+      expect(
+        find.textContaining('contratante@example.com'),
+        findsNothing,
+        reason: 'cancelamento revoga o contato (001 FR-024)',
+      );
+    });
+
+    testWidgets('prestador escolhido abre o perfil do contratante', (
+      tester,
+    ) async {
+      await abrirComo(tester, prestador, emAndamento);
+
+      await tocar(tester, 'Ver contratante');
+
+      expect(find.text('Perfil'), findsOneWidget);
+      expect(find.text('Ana Contratante'), findsOneWidget);
+    });
+
+    testWidgets('concluído: prestador avalia e vê o contratante; não cancela', (
+      tester,
+    ) async {
+      await abrirComo(tester, prestador, concluido);
+
+      expect(find.text('Avaliar'), findsOneWidget);
+      expect(find.text('Ver contratante'), findsOneWidget);
+      expect(find.text('Cancelar pedido'), findsNothing);
+      expect(find.text('Gerenciar pedido'), findsNothing);
+    });
+  });
 }
